@@ -21,7 +21,7 @@
 \newcommand{\miUniversidad}{Universidad de Granada}
 
 % Añadir tantos tutores como sea necesario separando cada uno de ellos mediante el comando `\medskip` y una línea en blanco
-\newcommand{\miTutor}{Daniel Molina Cabrera \\ \emph{Departamento de Ciencias de la Computación e Inteligencia Artificial} 
+\newcommand{\miTutor}{Daniel Molina Cabrera \\ \emph{Departamento de Ciencias de la Computación e Inteligencia Artificial \vspace{10px}} 
 
   % Añadir tantos tutores como sea necesario. 
 
@@ -45,11 +45,12 @@
 \frontmatter % Desactiva la numeración de capítulos y usa numeración romana para las páginas
 
 \input{preliminares/declaracion-originalidad}   
-\input{preliminares/dedicatoria}                % Opcional
+%\input{preliminares/dedicatoria}                % Opcional
 \input{preliminares/tablacontenidos}            
 \input{preliminares/agradecimientos}            % Opcional
-
-\input{preliminares/summary}                    
+\input{preliminares/resumen}
+\input{preliminares/summary}      
+\input{preliminares/presupuesto}              
 \input{preliminares/introduccion}               
 
 % -------------------------------------------------------------------
@@ -59,14 +60,26 @@
 
 \part{Parte Matemática} % Dividir un TFG en partes OPCIONAL
 
+\input{capitulos/optimizacion}
+\input{capitulos/grouping}
+\input{capitulos/lsgo}
+\input{capitulos/tests}
+
 % Información relevante para la elaboración del trabajo.
-\input{capitulos/documentacion}
-\input{capitulos/recomendaciones}
+%\input{capitulos/documentacion}
+%\input{capitulos/recomendaciones}
 
 % Añadir tantos capítulos como sea necesario
 
 \cleardoublepage\part{Parte Informática}
-\input{capitulos/capitulo-ejemplo}
+
+\input{capitulos/metaheuristicas}
+\input{capitulos/algoritmos}
+\input{capitulos/propuesta}
+\input{capitulos/resultados}
+\input{capitulos/conclusiones}
+
+%\input{capitulos/capitulo-ejemplo}
 
 % -------------------------------------------------------------------
 % APPENDIX: Opcional

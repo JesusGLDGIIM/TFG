@@ -278,6 +278,15 @@
           \textsf{\normalsize{Presentado por:}}\\
           {\normalsize\textrm{\miNombre}} 
           \bigskip
+          
+          \begin{minipage}[t]{0.25\textwidth}
+      		\flushleft
+      		\textbf{\normalsize{Responsable de tutorización}}
+    		  \end{minipage}
+    		  \begin{minipage}[t]{0.45\textwidth}
+      		\flushleft
+      		{\normalsize\textrm{\miTutor}}
+          \end{minipage}
 
           \textsf{\normalsize{Curso académico \miCurso}}
         \end{flushleft}  
@@ -288,49 +297,49 @@
 
     \thispagestyle{empty}
 
-    \begin{center}
-      \large  
+%    \begin{center}
+%      \large  
+%
+%      \vspace*{\stretch{1}}
+%
+%      \begingroup
+%      \huge{\miTitulo} \\ \bigskip
+%      \endgroup
+%
+%      \textrm{\miNombre}
+%
+%      \vspace{\stretch{5}}
+%
+%    \end{center}  
 
-      \vspace*{\stretch{1}}
-
-      \begingroup
-      \huge{\miTitulo} \\ \bigskip
-      \endgroup
-
-      \textrm{\miNombre}
-
-      \vspace{\stretch{5}}
-
-    \end{center}  
-
-    \newpage
-    \thispagestyle{empty}
-
-    \hfill
-
-    \vfill
-
-    \miNombre \textit{\miTitulo}.
-
-    Trabajo de fin de Grado. Curso académico \miCurso.
-    \bigskip
-
-    \begin{minipage}[t]{0.25\textwidth}
-      \flushleft
-      \textbf{Responsable de tutorización}
-    \end{minipage}
-    \begin{minipage}[t]{0.45\textwidth}
-      \flushleft
-      \miTutor
-    \end{minipage}
-    \begin{minipage}[t]{0.30\textwidth}
-      \flushright
-      \miGrado
-      \medskip
-
-      \miFacultad
-      \medskip
-
-      \miUniversidad
-    \end{minipage}
+%    \newpage
+%    \thispagestyle{empty}
+%
+%    \hfill
+%
+%    \vfill
+%
+%    \miNombre \textit{\miTitulo}.
+%
+%    Trabajo de fin de Grado. Curso académico \miCurso.
+%    \bigskip
+%
+%    \begin{minipage}[t]{0.25\textwidth}
+%      \flushleft
+%      \textbf{Responsable de tutorización}
+%    \end{minipage}
+%    \begin{minipage}[t]{0.45\textwidth}
+%      \flushleft
+%      \miTutor
+%    \end{minipage}
+%    \begin{minipage}[t]{0.30\textwidth}
+%      \flushright
+%      \miGrado
+%      \medskip
+%
+%      \miFacultad
+%      \medskip
+%
+%      \miUniversidad
+%    \end{minipage}
   }
