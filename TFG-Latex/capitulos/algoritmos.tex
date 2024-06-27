@@ -3,14 +3,237 @@
 
 \chapter{Algoritmos de comparación}
 
-Se explican los algoritmos que combinaremos para crear nuestra propuesta y que se utilizarán también para comparar como mejora el algoritmo final con los algoritmos básicos. Se incluirá el pseudocódigo y la explicación de las partes esenciales que componen cada algortimo.
+Se explican los algoritmos que combinaremos para crear nuestra propuesta y que se utilizarán también para comparar como mejora el algoritmo final comparado con los algoritmos básicos. Se incluirá el pseudocódigo y la explicación de las partes esenciales que componen cada algoritmo.
 
 \section{SHADE}
 
+En esta sección explicaremos el algoritmo SHADE (Success-history based parameter adaptation for Differential Evolution), que es un componente clave del algoritmo SHADE-ILS que utilizaremos en nuestra propuesta. El artículo original donde se publicó este algoritmo puede encontrarse en \cite{TanabeShade}.
+
+\textbf{\vspace{10px}}
+
+\noindent SHADE (Success-History based Adaptive Differential Evolution) es una variante del algoritmo de Evolución Diferencial (DE) que utiliza un esquema de adaptación de parámetros basado en el historial de éxitos. A diferencia de otras variantes de DE, SHADE mantiene una memoria histórica de los valores de los parámetros de control que han sido exitosos en generaciones anteriores, y utiliza esta información para guiar la selección de los parámetros de control en generaciones futuras. El objetivo es mejorar la eficiencia de búsqueda y la capacidad de encontrar soluciones óptimas en problemas de optimización. Sus componentes principales que lo diferencian de la evolución estándar se describen a continuación.
+
+\vspace{10px}
+
+\noindent\textbf{Estrategia de mutación}
+\newline
+
+\noindent La estrategia de mutación utilizada por SHADE es denominada current-to-p-best/1.
+
+\begin{itemize}
+\item \textbf{Estrategia current-to-pbest/1:}
+\end{itemize}
+\begin{equation}
+v_{i,G} = x_{i,G} + F_i \cdot (x_{\text{pbest},G} - x_{i,G}) + F_i \cdot (x_{r1,G} - x_{r2,G})
+\label{eq:mutation_strategy}
+\end{equation}
+
+\noindent El individuo \( \mathbf{x}_{\text{pbest},G} \) es seleccionado del \( N \cdot p \) (\( p \in [0, 1] \)) mejor de la generación \( G \). \( F_i \) es el parámetro \( F \) usado por el individuo \( \mathbf{x}_i \). Este parámetro \( p \) controla la voracidad del algoritmo, para balancear exploración con explotación. A menor \( p \), mayor explotación.
+
+\vspace{10px}
+
+\noindent En SHADE, cada individuo \(x_i\) tiene un \(p_i\) asociado, que se establece según la siguiente ecuación por generación:
+
+\begin{equation}
+p_i = \text{rand}[p_{\min}, 0.2]
+\end{equation}
+
+\noindent donde \(p_{\min}\) se establece de manera que cuando se selecciona el mejor individuo \(\text{pbest}\), se seleccionen al menos 2 individuos, es decir, \(p_{\min} = 2/N\). El valor máximo de 0.2 en la ecuación \ref{eq:mutation_strategy} es el valor máximo del rango para \(p\) sugerido.
+
+\vspace{10px}
+
+\noindent\textbf{Archivo Externo}
+
+Para mantener la diversidad, SHADE utiliza un archivo externo opcional. Los vectores padres \(x_{i,G}\) que fueron peores que los vectores de prueba \(u_{i,G}\) (y por lo tanto no son seleccionados para la supervivencia en el DE estándar) son preservados. Cuando se usa el archivo, \(x_{r2,G}\) en la ecuación de mutación \ref{eq:mutation_strategy} es seleccionado de \(P \cup A\), la unión de la población \(P\) y el archivo \(A\). El tamaño del archivo se establece igual al de la población, es decir, \(|A| = |P|\). Siempre que el tamaño del archivo excede \(|A|\), los elementos seleccionados aleatoriamente son eliminados para hacer espacio para los nuevos elementos insertados.
+
+\vspace{10px}
+
+\noindent\textbf{Adaptación de Parámetros}
+
+SHADE utiliza un mecanismo de adaptación de parámetros basado en un registro histórico de configuraciones de parámetros exitosas. Para ello, SHADE mantiene una memoria histórica con \(H\) entradas para ambos parámetros de control de DE, \(CR\) y \(F\), \(M_{\text{CR}}\) y \(M_{\text{F}}\). Una representación de esta tabla se puede ver en \ref{fig:historical_memory}. Al comienzo, el contenido de \(M_{\text{CR},i}\) y \(M_{\text{F},i}\) (\(i = 1, ..., H\)) se inicializa a 0.5.
+
+\noindent En cada generación, los parámetros de control \(CR_i\) y \(F_i\) utilizados por cada individuo \(x_i\) se generan seleccionando primero un índice \(r_i\) aleatoriamente de \([1, H]\), y luego aplicando las siguientes ecuaciones:
+
+\begin{equation}
+CR_i = \text{randn}(M_{\text{CR},r_i}, 0.1)
+\end{equation}
+\begin{equation}
+F_i = \text{randc}(M_{\text{F},r_i}, 0.1)
+\label{eq:F_i}
+\end{equation}
+
+\noindent Aquí, \(\text{randn}(\mu, \sigma^2)\) y \(\text{randc}(\mu, \sigma^2)\) son distribuciones normales y de Cauchy, respectivamente, con media \(\mu\) y varianza \(\sigma^2\).
+
+\noindent Si los valores generados para \(CR_i\) están fuera del rango \([0, 1]\), se reemplazan por el valor límite (0 o 1) más cercano al valor generado. Cuando \(F_i > 1\), \(F_i\) se trunca a 1, y cuando \(F_i \leq 0\), se aplica repetidamente la ecuación \ref{eq:F_i} para intentar generar un valor válido.
+
+\noindent En cada generación, los valores \(CR_i\) y \(F_i\) que logran generar un vector de prueba \(u_{i,G}\) que es mejor que el individuo padre \(x_{i,G}\) se registran como \(S_{CR}\) y \(S_{F}\).
+
+\noindent Los valores medios de \(\text{S}_{CR}\) y \(\text{S}_{F}\) para cada generación se almacenan en una memoria histórica \(M_{\text{CR}}\) y \(M_{\text{F}}\). SHADE mantiene un conjunto diverso de parámetros para guiar la adaptación de parámetros de control a medida que avanza la búsqueda. Por lo tanto, incluso si \(\text{S}_{CR}\) y \(\text{S}_{F}\) para alguna generación particular contienen un conjunto deficiente de valores, los parámetros almacenados en la memoria de generaciones anteriores no pueden verse directamente afectados de manera negativa.
+
+\noindent Al final de la generación, el contenido de la memoria se actualiza de la siguiente manera:
+
+\begin{equation}
+M_{\text{CR},k,G+1} =
+\begin{cases} 
+\text{meanWA}(\text{S}_{CR}) & \text{si } \text{S}_{CR} \neq \emptyset \\
+M_{\text{CR},k,G} & \text{de lo contrario}
+\end{cases}
+\end{equation}
+
+\begin{equation}
+M_{\text{F},k,G+1} =
+\begin{cases} 
+\text{meanWL}(\text{S}_{F}) & \text{si } \text{S}_{F} \neq \emptyset \\
+M_{\text{F},k,G} & \text{de lo contrario}
+\end{cases}
+\end{equation}
+
+\vspace{10px}
+
+\noindent Un índice \(k\) (\(1 \leq k \leq H\)) determina la posición en la memoria a actualizar. Al comienzo de la búsqueda, \(k\) se inicializa a 1. \(k\) se incrementa cada vez que se inserta un nuevo elemento en el historial. Si \(k > H\), \(k\) se establece en 1. En la generación \(G\), se actualiza el \(k\)-ésimo elemento en la memoria. Nótese que cuando todos los individuos en la generación \(G\) no logran generar un vector de prueba que sea mejor que el padre, es decir, \(\text{S}_{CR} = \text{S}_{F} = \emptyset\), la memoria no se actualiza.
+
+\noindent Además, la media ponderada \(\text{meanWA}(\text{S}_{CR})\) y la media ponderada de Lehmer \(\text{meanWL}(\text{S}_{F})\) se calculan usando las fórmulas descritas a continuación, y al igual que \(\text{meanWA}(\text{S}_{CR})\), la cantidad de mejora se usa para influir en la adaptación de parámetros.
+
+\begin{equation}
+\text{meanWA}(S_{CR}) = \sum_{k=1}^{|S_{CR}|} w_k \cdot S_{CR,k}
+\end{equation}
+
+\begin{equation}
+w_k = \frac{\Delta f_k}{\sum_{k=1}^{|S_{CR}|} \Delta f_k}
+\end{equation}
+
+\noindent donde \(\Delta f_k = |f(u_{k,G}) - f(x_{k,G})|\).
+
+\begin{equation}
+\text{meanWL}(\text{S}_{F}) = \frac{\sum_{k=1}^{|\text{S}_{F}|} w_k \cdot \text{S}_{F,k}^2}{\sum_{k=1}^{|\text{S}_{F}|} w_k \cdot \text{S}_{F,k}}
+\end{equation}
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+\textbf{Index} & \textbf{1} & \textbf{2} & $\cdots$ & \textbf{H - 1} & \textbf{H} \\ \hline
+$M_{CR}$ & $M_{CR,1}$ & $M_{CR,2}$ & $\cdots$ & $M_{CR,H-1}$ & $M_{CR,H}$ \\ \hline
+$M_{F}$ & $M_{F,1}$ & $M_{F,2}$ & $\cdots$ & $M_{F,H-1}$ & $M_{F,H}$ \\ \hline
+\end{tabular}
+\caption{La memoria histórica $M_{CR}$, $M_{F}$}
+\label{fig:historical_memory}
+\end{table}
+
+\newpage
+
+\noindent\textbf{Pseudocódigo de SHADE}
+
+\begin{algorithm}
+\caption{SHADE}
+\begin{algorithmic}[1]
+\STATE // Fase de inicialización
+\STATE $G = 0$;
+\STATE Inicializar población $P_0 = (x_{1,0}, \ldots, x_{N,0})$ aleatoriamente;
+\STATE Establecer todos los valores en $M_{CR}$, $M_F$ a 0.5;
+\STATE Archivo $A = \emptyset$;
+\STATE Contador de índice $k = 1$;
+\STATE // Bucle principal
+\WHILE {No se cumplen los criterios de terminación}
+    \STATE $S_{CR} = \emptyset$; $S_F = \emptyset$;
+    \FOR {$i = 1$ to $N$}
+        \STATE $r_i =$ Seleccionar aleatoriamente de $[1, H]$;
+        \STATE $CR_{i,G} = \text{randn}_i(M_{CR,r_i}, 0.1)$;
+        \STATE $F_{i,G} = \text{randc}_i(M_{F,r_i}, 0.1)$;
+        \STATE $p_{i,G} = \text{rand}[p_{\min}, 0.2]$;
+        \STATE Generar vector de prueba $u_{i,G}$ usando \textit{current-to-pbest/1/bin};
+    \ENDFOR
+    \FOR {$i = 1$ to $N$}
+        \IF {$f(u_{i,G}) \leq f(x_{i,G})$}
+            \STATE $x_{i,G+1} = u_{i,G}$;
+        \ELSE
+            \STATE $x_{i,G+1} = x_{i,G}$;
+        \ENDIF
+        \IF {$f(u_{i,G}) < f(x_{i,G})$}
+            \STATE $x_{i,G} \rightarrow A$;
+            \STATE $CR_{i,G} \rightarrow S_{CR}$, $F_{i,G} \rightarrow S_F$;
+        \ENDIF
+    \ENDFOR
+    \STATE Si $|A| \geq |P|$, se eliminan individuos seleccionados aleatoriamente para que $|A| \leq |P|$;
+    \IF {$S_{CR} \neq \emptyset$ y $S_F \neq \emptyset$}
+        \STATE Actualizar $M_{CR,k}$, $M_{F,k}$ basado en $S_{CR}$, $S_F$;
+        \STATE $k = k + 1$;
+        \IF {$k > H$}
+            \STATE $k$ se establece en 1;
+        \ENDIF
+    \ENDIF
+\ENDWHILE
+\end{algorithmic}
+\end{algorithm}
+
+\newpage
+
 \section{SHADE-ILS}
+En este apartado, presentamos el algoritmo SHADE-ILS, expuesto por primera vez en \cite{Molina2018}, que combina el uso de la técnica de evolución diferencial SHADE explicada anteriormente y la búsqueda local. Además proporciona un método de reinicio para cuando se considera que la población se ha estancado en un óptimo local y no se puede mejorar más. Describiremos en detalle los elementos que componen el algoritmo y un pseudocódigo que nos proporcione una visión global del algoritmo.
+
+\begin{algorithm}
+\caption{SHADE-ILS}
+\begin{algorithmic}[1]
+\STATE \textbf{Algoritmo 1: SHADE-ILS}
+\STATE población $\leftarrow$ \text{random}(dim, tamaño\_población)
+\STATE solución\_inicial $\leftarrow$ (superior + inferior)/2
+\STATE actual\_mejor $\leftarrow$ BL(solución\_inicial)
+\STATE mejor\_solución $\leftarrow$ actual\_mejor
+\WHILE {evaluaciones\_totales < evaluaciones\_máximas}
+    \STATE previo $\leftarrow$ actual\_mejor.fitness
+    \STATE actual\_mejor $\leftarrow$ SHADE(población, actual\_mejor)
+    \STATE mejora $\leftarrow$ previo - actual\_mejor.fitness
+    \STATE Escoge el método de BL a aplicar en esta iteración.
+    \STATE actual\_mejor $\leftarrow$ BL(población, actual\_mejor)
+    \STATE Actualiza probabilidad de aplicar BL.
+    \IF {mejor(actual\_mejor, mejor\_solución)}
+        \STATE mejor\_solución $\leftarrow$ actual\_mejor
+    \ENDIF
+    \IF {Debe reiniciar}
+        \STATE Reinicia y actualiza actual\_mejor
+    \ENDIF
+\ENDWHILE
+\end{algorithmic}
+\end{algorithm}
+
+\vspace{10px}
+
+\noindent\textbf{Método de exploración}
+
+Como su nombre indica, el algoritmo SHADE-ILS utiliza como método de exploración del espacio el algoritmo SHADE, explicado en detalle en la sección anterior.
+
+\vspace{10px}
+
+\noindent\textbf{Selección de la Búsqueda Local}
+
+La selección de la búsqueda local a utilizar en cada iteración se lleva a cabo según la mejora que ha aportado cada búsqueda local en su última aplicación. Inicialmente la mejora de cada método de búsqueda local es $0$, así que en las primeras llamadas a la función de búsqueda local se aplique cada vez un método distinto hasta haber aplicado todos una vez. Una vez se ha aplicado un método cada vez, tenemos para cada método el ratio de mejora \( I_{LS} \). A partir de ahora se aplicará siempre el método con mayor \( I_{LS} \) y se actualizará esta valor en cada aplicación de la BL seleccionada. De esta forma se intentará aplicar siempre el método que mayor mejora aporta, cuando un método tenga un rendimiento peor, su \( I_{LS} \) disminuirá y otro método con mayor \( I_{LS} \) ocupará su lugar. Este método no garantiza aplicar siempre el método óptimo, pero proporciona una buena heurística para decidir que método aplicar y permite cambiar rápidamente de método de BL si otro método se estanca. El \( I_{LS} \) se calcula como:
+
+\[
+\text{ILS} = \frac{\text{fitness(BeforeLS)} - \text{fitness(AfterLS)}}{\text{fitness(BeforeLS)}}
+\]
+
+\vspace{10px}
+
+En \cite{Molina2018} se propone utilizar dos métodos de búsqueda local: el algoritmo MTS LS-1 y L-BFGS-B. El primero está especialmente diseñado para problemas LSGO y es es apropiado para problemas separables pero es muy sensible a rotaciones, el segundo es menos potente, pero menos sensible a rotaciones.
+
+\vspace{10px}
+
+\noindent\textbf{Mecanismo de reinicio}
+
+El mecanismo de reinicio que se propone en \citep{Molina2018} consiste en reiniciar la población cuando se da la condición de que durante tres iteraciones consecutivas, el ratio de mejora es menor del 5\%. En estos casos el mecanismo de reinicio aplicado sigue los siguientes pasos:
+
+\begin{itemize}
+    \item Se selecciona aleatoriamente una solución \( \text{sol} \).
+    \item Se aplica una perturbación a \( \text{sol} \) que siga una distribución uniforme de media 0 y longitud del intervalo un 1\% del dominio de búsqueda:
+    \[
+    \text{currentbest} = \text{sol} + \text{rand}_{i} \cdot 0.01 \cdot (b - a)
+    \]
+    donde \( \text{rand}_{i} \) devuelve un número aleatorio \( \text{rand}_{i} \in [0, 1] \) y \( [a, b] \) es el dominio de búsqueda.
+    \item Los parámetros adaptativos de los métodos de BL se reinician a sus valores por defecto.
+\end{itemize}
 
 \section{DG2}
-
+\cite{DG2}
 \section{RDG2}
 
 \endinput

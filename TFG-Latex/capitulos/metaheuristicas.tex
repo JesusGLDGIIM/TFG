@@ -1,14 +1,64 @@
 % !TeX root = ../tfg.tex
 % !TeX encoding = utf8
 
-\chapter{Metahehurísticas}
+\chapter{Metaheurísticas}
 
 \section{Definición}
-Explicar las metaheuristicas en general, diferencias con las heuristicas y su clasificación. Nos centraremos en los algoritmos evolutivos, en los de descomposición y de búsqueda local
+Explicar las metaheurísticas en general, diferencias con las heurísticas y su clasificación. Nos centraremos en los algoritmos evolutivos, en los de descomposición y de búsqueda local
 
 \section{Algoritmos evolutivos}
 
 \subsection{Evolución diferencial}
+
+Esta sección describe brevemente la Evolución Diferencial (DE). Similar a otros algoritmos evolutivos para la optimización numérica, una población de DE se representa como un conjunto de vectores de parámetros reales \( \mathbf{x}_i = (x_{1}, \ldots, x_{D}), i = 1, \ldots, N \), donde \( D \) es la dimensionalidad del problema objetivo y \( N \) es el tamaño de la población. 
+
+Al comienzo de la búsqueda, los vectores individuales de la población se inicializan aleatoriamente. Luego, se repite un proceso de generación de vectores de prueba y selección hasta que se encuentra algún criterio de parada. En cada generación \( G \), se genera un vector mutado \( \mathbf{v}_{i,G} \) a partir de un miembro de la población existente \( \mathbf{x}_{i,G} \) aplicando alguna estrategia de mutación. A continuación se muestran ejemplos de estrategias de mutación:
+
+\begin{itemize}
+    \item \textbf{rand/1}
+    \[
+    \mathbf{v}_{i,G} = \mathbf{x}_{r1,G} + F \cdot (\mathbf{x}_{r2,G} - \mathbf{x}_{r3,G})
+    \]
+
+    \item \textbf{rand/2}
+    \[
+    \mathbf{v}_{i,G} = \mathbf{x}_{r1,G} + F \cdot (\mathbf{x}_{r2,G} - \mathbf{x}_{r3,G}) + F \cdot (\mathbf{x}_{r4,G} - \mathbf{x}_{r5,G})
+    \]
+
+    \item \textbf{best/1}
+    \[
+    \mathbf{v}_{i,G} = \mathbf{x}_{best,G} + F \cdot (\mathbf{x}_{r1,G} - \mathbf{x}_{r2,G})
+    \]
+
+    \item \textbf{current-to-best/1}
+    \[
+    \mathbf{v}_{i,G} = \mathbf{x}_{i,G} + F \cdot (\mathbf{x}_{best,G} - \mathbf{x}_{i,G}) + F \cdot (\mathbf{x}_{r1,G} - \mathbf{x}_{r2,G})
+    \]
+\end{itemize}
+
+Los índices \( r1, \ldots, r5 \) se seleccionan aleatoriamente de \([1, N]\) de manera que difieran entre sí, así como \( i \). \( \mathbf{x}_{best,G} \) es el mejor individuo en la población en la generación \( G \). El parámetro \( F \in [0, 1] \) controla la potencia del operador de mutación diferencial, a mayor F, mayor será la diferencia entre el vector original y el mutado.
+
+Después de generar el vector mutado \( \mathbf{v}_{i,G} \), se cruza con el padre \( \mathbf{x}_{i,G} \) para generar el vector de prueba \( \mathbf{u}_{i,G} \). El cruce binomial, el operador de cruce más utilizado en DE, se implementa de la siguiente manera:
+
+\[
+u_{j,i,G} =
+\begin{cases}
+v_{j,i,G} & \text{si } \text{rand}[0, 1) \leq CR \text{ o } j = j_{\text{rand}} \\
+x_{j,i,G} & \text{de lo contrario}
+\end{cases}
+\]
+
+\text{rand}[0, 1) denota un número aleatorio seleccionado uniformemente de \([0, 1)\), y \( j_{\text{rand}} \) es un índice de variable de decisión que se selecciona aleatoriamente y de manera uniforme de \([1, D]\). \( CR \in [0, 1] \) es la tasa de cruce.
+
+Después de que se han generado todos los vectores de prueba \( \mathbf{u}_{i,G} \), un proceso de selección determina los supervivientes para la siguiente generación. El operador de selección en DE estándar compara cada individuo \( \mathbf{x}_{i,G} \) contra su vector de prueba correspondiente \( \mathbf{u}_{i,G} \), manteniendo el mejor vector en la población.
+
+\[
+\mathbf{x}_{i,G+1} = 
+\begin{cases} 
+\mathbf{u}_{i,G} & \text{si } f(\mathbf{u}_{i,G}) \leq f(\mathbf{x}_{i,G}) \\ 
+\mathbf{x}_{i,G} & \text{de lo contrario} 
+\end{cases} 
+\]
 
 \section{Algoritmos de descomposición}
 
