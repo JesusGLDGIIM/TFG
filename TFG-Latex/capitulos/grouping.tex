@@ -11,8 +11,108 @@ A continuación, se exponen las definiciones y teoremas necesarios para entender
 
 \section{Definiciones}
 
+\begin{definicion}
+\label{1}
+Una función \( f(x_1, \ldots, x_n) \) es separable si y solo si:
+\[
+\arg \min_{(x_1, \ldots, x_n)} f(x_1, \ldots, x_n) =
+\left(
+\arg \min_{x_1} f(x_1, \ldots), \ldots, \arg \min_{x_n} f(\ldots, x_n)
+\right)
+\]
+y no separable en otro caso.
+\end{definicion}
+
+Es decir, podemos encontrar el óptimo de esa función optimizando en cada dimensión por separado.
+
+\begin{definicion}
+\label{2}
+Una función \(f(x)\) se dice parcialmente separable con m componentes si y solo si:
+\[
+\arg \min_{x} f(x) =
+\left(
+\arg \min_{x_1} f(x_1, \ldots), \ldots, \arg \min_{x_m} f(\ldots, x_m)
+\right)
+\]
+
+donde \( x = (x_1, \ldots, x_n) \) es un vector de decisión de n dimensiones, \(x_1, \ldots, x_n \) son subvectores disjuntos de \(x\) y \( 2 \leq m \leq n\).
+
+La definición \ref{2} difiere de \ref{1} en que ahora los vectores \(x_i\) no son unidimensionales, es decir podemos encontrar el óptimo optimizando cada subvector por separado, pero cada subvector puede requerir optimizar un conjunto de variables en vez de una única variable cada vez. La definición \ref{1} es un caso particular de \ref{2} cuando \(n = m\)
+
+\end{definicion}
+
+\begin{definicion}
+\label{3}
+Una función es parcialemnte aditivamente separable si es de la siguiente forma:
+\[
+f(x) = \sum_{i=1}^{m} f_i(x_i), \quad m > 1
+\]
+
+donde \(f_i(\dot) \) son subfunciones que solo dependen de las variables que forman cada vector \( x_i \) y  \( x \) y \( x_i \) se definen como en \ref{2}. En el caso en el que \(n = m\), la función se dice totalmente aditivamente separable.
+
+\end{definicion}
+
+La definición \ref{3} es un caso especial de la definición \ref{2}. Un ejemplo de este tipo de funciones puede ser la función \( f(x) = x_1^2 + x_2^2 \). Es claro que \( f(x) = f_1(x_1) + f_2(x_2) \) con \( f_1(x_1) = x_1^2 \) y \( f_2(x_2) = x_2^2 \).
 
 \section{Teoremas}
+
+\begin{teorema}
+\label{T1}
+Sea \( f(\mathbf{x}) \) una función (parcialemente) aditivamente separable. Para todo \( a, b_1 \neq b_2, \delta \in \mathbb{R}, \delta \neq 0 \), si se cumple la siguiente condición:
+\[
+\Delta_{\delta,x_p}[f](\mathbf{x})|_{x_p=a, x_q=b_1} \neq \Delta_{\delta,x_p}[f](\mathbf{x})|_{x_p=a, x_q=b_2}
+\]
+entonces \( x_p \) y \( x_q \) son no separables, donde
+\[
+\Delta_{\delta,x_p}[f](\mathbf{x}) = f(\ldots, x_p + \delta, \ldots) - f(\ldots, x_p, \ldots)
+\]
+se refiere a la diferencia hacia adelante de \( f \) con respecto a la variable \( x_p \) con intervalo \( \delta \).
+\end{teorema}
+
+El Teorema \ref{T1} sencillamente nos dice que, dada una función aditivamente separable \( f(\mathbf{x}) \), dos variables \( x_p \) y \( x_q \) interactúan si la diferencia hacia adelante evaluada con dos valores diferentes para \( x_q \) produce resultados diferentes.
+
+Para probar el teorema es suficiente demostrar su contrarrecíproco, que establece que si dos variables \( x_p \) y \( x_q \) son separables, entonces la diferencia hacia adelante evaluada con dos valores diferentes para \( x_q \) produce el mismo resultado.
+
+
+\begin{lema}
+\label{L1}
+Si \( f(\mathbf{x}) \) es aditivamente separable, entonces para cualquier \( x_p \in \mathbf{x} \) tenemos
+\[
+\frac{\partial f(\mathbf{x})}{\partial x_p} = \frac{\partial f_i(\mathbf{x}_i)}{\partial x_p}, \quad \forall x_p \in \mathbf{x}_i.
+\]
+\end{lema}
+
+\begin{proof}
+Dado que \( f(\mathbf{x}) \) es aditivamente separable, tenemos
+\[
+\frac{\partial f(\mathbf{x})}{\partial x_p} = \frac{\partial}{\partial x_p} \sum_{i=1}^{m} f_i(\mathbf{x}_i) = \frac{\partial f_1(\mathbf{x}_1)}{\partial x_p} + \cdots + \frac{\partial f_m(\mathbf{x}_m)}{\partial x_p}, \quad \forall x_p \in \mathbf{x}_i
+\]
+donde \( \mathbf{x}_1, \ldots, \mathbf{x}_m \) son vectores de decisión mutuamente exclusivos. Por lo tanto,
+\[
+\frac{\partial f(\mathbf{x}_j)}{\partial x_p} = 0, \quad \forall j \neq i.
+\]
+Así,
+\[
+\frac{\partial f(\mathbf{x})}{\partial x_p} = \frac{\partial f_i(\mathbf{x}_i)}{\partial x_p}, \quad \forall x_p \in \mathbf{x}_i.
+\]
+\end{proof}
+
+\begin{proof}[Demostración del Teorema \ref{T1}]
+Según el Lema \ref{L1},
+\[
+\frac{\partial f(\mathbf{x})}{\partial x_p} = \frac{\partial f_i(\mathbf{x}_i)}{\partial x_p}, \quad \forall x_p \in \mathbf{x}_i.
+\]
+Entonces, para todo \( x_q \notin \mathbf{x}_i \) tenemos
+\[
+\frac{\partial f(\mathbf{x})}{\partial x_p} \bigg|_{x_q=b_1} = \frac{\partial f(\mathbf{x})}{\partial x_p} \bigg|_{x_q=b_2} = \frac{\partial f_i(\mathbf{x}_i)}{\partial x_p}, \quad \forall b_1 \neq b_2.
+\]
+\[
+\int_{a}^{a+\delta} \frac{\partial f(\mathbf{x})}{\partial x_p} \, dx_p \bigg|_{x_q=b_1} = \int_{a}^{a+\delta} \frac{\partial f(\mathbf{x})}{\partial x_p} \, dx_p \bigg|_{x_q=b_2}
+\]
+\[
+\Delta_{\delta,x_p}[f](\mathbf{x})|_{x_p=a, x_q=b1} = \Delta_{\delta,x_p}[f](\mathbf{x})|_{x_p=a, x_q=b2} \quad \forall a, b_1 \neq b_2, \delta \in \mathbb{R}, \delta \neq 0.
+\]
+\end{proof}
 
 \section{Problemas descomponibles mediante agrupamiento de variables}
 
