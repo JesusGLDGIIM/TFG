@@ -224,11 +224,11 @@ El mecanismo de reinicio que se propone en \citep{Molina2018} consiste en reinic
 
 \begin{itemize}
     \item Se selecciona aleatoriamente una solución \( \text{sol} \).
-    \item Se aplica una perturbación a \( \text{sol} \) que siga una distribución uniforme de media 0 y longitud del intervalo un 1\% del dominio de búsqueda:
+    \item Se aplica una perturbación a \( \text{sol} \) que siga una distribución uniforme de media $0$ y longitud del intervalo un 1\% del dominio de búsqueda:
     \[
     \text{currentbest} = \text{sol} + \text{rand}_{i} \cdot 0.01 \cdot (b - a)
     \]
-    donde \( \text{rand}_{i} \) devuelve un número aleatorio \( \text{rand}_{i} \in [0, 1] \) y \( [a, b] \) es el dominio de búsqueda.
+    donde \( \text{rand}_{i} \) devuelve un número aleatorio \( \text{rand}_{i} \in [-1, 1] \) y \( [a, b] \) es el dominio de búsqueda.
     \item Los parámetros adaptativos de los métodos de BL se reinician a sus valores por defecto.
 \end{itemize}
 
