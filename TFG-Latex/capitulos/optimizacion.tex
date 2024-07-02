@@ -1,13 +1,28 @@
 % !TeX root = ../tfg.tex
 % !TeX encoding = utf8
 
-\chapter{Problemas de Optimización}
+\chapter{Preliminares}
+
+\textbf{Derivada Direccional:} Sea \( f : \mathbb{R}^n \to \overline{\mathbb{R}} \) una función diferenciable, y \( \mathbf{u} = (u_1, \ldots, u_n) \) un vector de \( U_X \). La derivada direccional de \( f \) en la dirección \( \mathbf{u} \), denotada \( D_{\mathbf{u}} f(\mathbf{x}) \), se define como
+\[
+D_{\mathbf{u}} f(\mathbf{x}) = \sum_{i=1}^{n} \frac{\partial f(\mathbf{x})}{\partial x_i} u_i.
+\]
+
+\textbf{Integral de Línea:} Sea \( L \) una curva con puntos extremos \( A \) y \( B \) en el espacio de decisión \( \mathbb{R}^n \) y la longitud del arco de \( L \) sea \( l \). Sea \( C \) cualquier punto en \( L \) y la coordenada de \( C (\mathbf{x}) \) puede ser determinada de manera única por la longitud del arco \( AC (s) \): \( \mathbf{x} = \mathbf{x}(s) \), \( s \in [0, l] \). La integral de una función \( g : \mathbb{R}^n \to \overline{\mathbb{R}} \) a lo largo de la curva \( L \) se da por
+\begin{equation}
+\int_L g(\mathbf{x}) ds = \int_0^l g(\mathbf{x}(s)) ds.
+\label{EQ0}
+\end{equation}
+
+\chapter{Optimización numérica}
 
 \section{Definiciones}
 
-\section{Algoritmos}
+\section{Teoremas}
 
-\section{Dificultades}
+\section{Dificultades(Alta dimensionalidad)}
+
+\section{¿Evolución Diferencial?}
 
 \endinput
 %--------------------------------------------------------------------

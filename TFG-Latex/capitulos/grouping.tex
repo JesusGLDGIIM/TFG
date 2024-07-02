@@ -12,60 +12,85 @@ A continuación, se exponen las definiciones y teoremas necesarios para entender
 \section{Definiciones}
 
 \begin{definicion}
-\label{1}
+\label{D1}
 Una función \( f(x_1, \ldots, x_n) \) es separable si y solo si:
-\[
+\begin{equation}
 \arg \min_{(x_1, \ldots, x_n)} f(x_1, \ldots, x_n) =
 \left(
 \arg \min_{x_1} f(x_1, \ldots), \ldots, \arg \min_{x_n} f(\ldots, x_n)
 \right)
-\]
+\label{EQ1}
+\end{equation}
 y no separable en otro caso.
 \end{definicion}
 
 Es decir, podemos encontrar el óptimo de esa función optimizando en cada dimensión por separado.
 
 \begin{definicion}
-\label{2}
-Una función \(f(x)\) se dice parcialmente separable con m componentes si y solo si:
-\[
+\label{D2}
+Una función \(f(x)\) se dice parcialmente separable con \( m \) componentes si y solo si:
+\begin{equation}
 \arg \min_{x} f(x) =
 \left(
 \arg \min_{x_1} f(x_1, \ldots), \ldots, \arg \min_{x_m} f(\ldots, x_m)
 \right)
-\]
+\label{EQ2}
+\end{equation}
+donde \( x = (x_1, \ldots, x_n) \) es un vector de decisión de \( n \) dimensiones, \( x_1, \ldots, x_n \) son subvectores disjuntos de \( x \) y \( 2 \leq m \leq n \).
 
-donde \( x = (x_1, \ldots, x_n) \) es un vector de decisión de n dimensiones, \(x_1, \ldots, x_n \) son subvectores disjuntos de \(x\) y \( 2 \leq m \leq n\).
-
-La definición \ref{2} difiere de \ref{1} en que ahora los vectores \(x_i\) no son unidimensionales, es decir podemos encontrar el óptimo optimizando cada subvector por separado, pero cada subvector puede requerir optimizar un conjunto de variables en vez de una única variable cada vez. La definición \ref{1} es un caso particular de \ref{2} cuando \(n = m\)
-
+La definición \ref{D2} difiere de \ref{D1} en que ahora los vectores \( x_i \) no son unidimensionales, es decir, podemos encontrar el óptimo optimizando cada subvector por separado, pero cada subvector puede requerir optimizar un conjunto de variables en vez de una única variable cada vez. La definición \ref{D1} es un caso particular de \ref{D2} cuando \( n = m \).
 \end{definicion}
 
 \begin{definicion}
-\label{3}
-Una función es parcialemnte aditivamente separable si es de la siguiente forma:
-\[
+\label{D3}
+Una función es parcialmente aditivamente separable si es de la siguiente forma:
+\begin{equation}
 f(x) = \sum_{i=1}^{m} f_i(x_i), \quad m > 1
-\]
-
-donde \(f_i(\dot) \) son subfunciones que solo dependen de las variables que forman cada vector \( x_i \) y  \( x \) y \( x_i \) se definen como en \ref{2}. En el caso en el que \(n = m\), la función se dice totalmente aditivamente separable.
-
+\label{EQ3}
+\end{equation}
+donde \( f_i(\cdot) \) son subfunciones que solo dependen de las variables que forman cada vector \( x_i \) y \( x \) y \( x_i \) se definen como en \ref{D2}. En el caso en el que \( n = m \), la función se dice totalmente aditivamente separable.
 \end{definicion}
 
-La definición \ref{3} es un caso especial de la definición \ref{2}. Un ejemplo de este tipo de funciones puede ser la función \( f(x) = x_1^2 + x_2^2 \). Es claro que \( f(x) = f_1(x_1) + f_2(x_2) \) con \( f_1(x_1) = x_1^2 \) y \( f_2(x_2) = x_2^2 \).
+La definición \ref{D3} es un caso especial de la definición \ref{D2}. Un ejemplo de este tipo de funciones puede ser la función \( f(x) = x_1^2 + x_2^2 \). Es claro que \( f(x) = f_1(x_1) + f_2(x_2) \) con \( f_1(x_1) = x_1^2 \) y \( f_2(x_2) = x_2^2 \).
+
+\begin{definicion}
+\label{D4}
+Se dice que dos variables \( x \) e \( y \) interactúan, si no pueden ser optimizadas de forma independiente. Lo denotaremos por \( x \leftrightarrow y \).
+\end{definicion}
+
+Introducimos ahora definiciones que serán útiles para detectar variables que interactúan entre sí. La interacción entre variables es otro enfoque de la separabilidad de funciones, pero que nos será útil a la hora de diseñar el algoritmo de agrupamiento diferencial recursivo.
+
+\begin{definicion}
+\label{D5}
+Sea \( f : \mathbb{R}^n \to \overline{\mathbb{R}} \) una función diferenciable. Las variables de decisión \( x_i \) y \( x_j \) interactúan si existe una solución candidata \( \mathbf{x}^* \) tal que
+\begin{equation}
+\frac{\partial^2 f(\mathbf{x}^*)}{\partial x_i \partial x_j} \neq 0,
+\label{EQ4}
+\end{equation}
+y diremos que interactúan condicionalmente si 
+\begin{equation}
+\frac{\partial^2 f(\mathbf{x}^*)}{\partial x_i \partial x_j} = 0,
+\label{EQ5}
+\end{equation}
+y existe un conjunto de variables de decisión \(\{x_{k1}, \ldots, x_{kt}\} \subset X\), tal que \( x_i \leftrightarrow x_{k1} \leftrightarrow \ldots \leftrightarrow x_{kt} \leftrightarrow x_j \). 
+
+Las variables de decisión \( x_i \) y \( x_j \) son independientes si para cualquier solución candidata \( \mathbf{x}^* \), se cumple la ecuación anterior y no existe un conjunto de variables de decisión \(\{x_{k1}, \ldots, x_{kt}\} \subset X\), tal que \( x_i \leftrightarrow x_{k1} \leftrightarrow \ldots \leftrightarrow x_{kt} \leftrightarrow x_j \).
+\end{definicion}
 
 \section{Teoremas}
 
 \begin{teorema}
 \label{T1}
 Sea \( f(\mathbf{x}) \) una función (parcialemente) aditivamente separable. Para todo \( a, b_1 \neq b_2, \delta \in \mathbb{R}, \delta \neq 0 \), si se cumple la siguiente condición:
-\[
+\begin{equation}
 \Delta_{\delta,x_p}[f](\mathbf{x})|_{x_p=a, x_q=b_1} \neq \Delta_{\delta,x_p}[f](\mathbf{x})|_{x_p=a, x_q=b_2}
-\]
+\label{EQ6}
+\end{equation}
 entonces \( x_p \) y \( x_q \) son no separables, donde
-\[
+\begin{equation}
 \Delta_{\delta,x_p}[f](\mathbf{x}) = f(\ldots, x_p + \delta, \ldots) - f(\ldots, x_p, \ldots)
-\]
+\label{EQ7}
+\end{equation}
 se refiere a la diferencia hacia adelante de \( f \) con respecto a la variable \( x_p \) con intervalo \( \delta \).
 \end{teorema}
 
@@ -73,46 +98,175 @@ El Teorema \ref{T1} sencillamente nos dice que, dada una función aditivamente s
 
 Para probar el teorema es suficiente demostrar su contrarrecíproco, que establece que si dos variables \( x_p \) y \( x_q \) son separables, entonces la diferencia hacia adelante evaluada con dos valores diferentes para \( x_q \) produce el mismo resultado.
 
-
 \begin{lema}
 \label{L1}
 Si \( f(\mathbf{x}) \) es aditivamente separable, entonces para cualquier \( x_p \in \mathbf{x} \) tenemos
-\[
+\begin{equation}
 \frac{\partial f(\mathbf{x})}{\partial x_p} = \frac{\partial f_i(\mathbf{x}_i)}{\partial x_p}, \quad \forall x_p \in \mathbf{x}_i.
-\]
+\label{EQ8}
+\end{equation}
 \end{lema}
 
 \begin{proof}
 Dado que \( f(\mathbf{x}) \) es aditivamente separable, tenemos
-\[
+\begin{equation}
 \frac{\partial f(\mathbf{x})}{\partial x_p} = \frac{\partial}{\partial x_p} \sum_{i=1}^{m} f_i(\mathbf{x}_i) = \frac{\partial f_1(\mathbf{x}_1)}{\partial x_p} + \cdots + \frac{\partial f_m(\mathbf{x}_m)}{\partial x_p}, \quad \forall x_p \in \mathbf{x}_i
-\]
-donde \( \mathbf{x}_1, \ldots, \mathbf{x}_m \) son vectores de decisión mutuamente exclusivos. Por lo tanto,
-\[
+\label{EQ9}
+\end{equation}
+donde \( \mathbf{x}_1, \ldots, \mathbf{x}_m \) son vectores de decisión mutuamente excluyentes. Por lo tanto,
+\begin{equation}
 \frac{\partial f(\mathbf{x}_j)}{\partial x_p} = 0, \quad \forall j \neq i.
-\]
+\label{EQ10}
+\end{equation}
 Así,
-\[
+\begin{equation}
 \frac{\partial f(\mathbf{x})}{\partial x_p} = \frac{\partial f_i(\mathbf{x}_i)}{\partial x_p}, \quad \forall x_p \in \mathbf{x}_i.
-\]
+\label{EQ11}
+\end{equation}
 \end{proof}
 
 \begin{proof}[Demostración del Teorema \ref{T1}]
 Según el Lema \ref{L1},
-\[
+\begin{equation}
 \frac{\partial f(\mathbf{x})}{\partial x_p} = \frac{\partial f_i(\mathbf{x}_i)}{\partial x_p}, \quad \forall x_p \in \mathbf{x}_i.
-\]
+\label{EQ12}
+\end{equation}
 Entonces, para todo \( x_q \notin \mathbf{x}_i \) tenemos
-\[
+\begin{equation}
 \frac{\partial f(\mathbf{x})}{\partial x_p} \bigg|_{x_q=b_1} = \frac{\partial f(\mathbf{x})}{\partial x_p} \bigg|_{x_q=b_2} = \frac{\partial f_i(\mathbf{x}_i)}{\partial x_p}, \quad \forall b_1 \neq b_2.
-\]
-\[
+\label{EQ13}
+\end{equation}
+\begin{equation}
 \int_{a}^{a+\delta} \frac{\partial f(\mathbf{x})}{\partial x_p} \, dx_p \bigg|_{x_q=b_1} = \int_{a}^{a+\delta} \frac{\partial f(\mathbf{x})}{\partial x_p} \, dx_p \bigg|_{x_q=b_2}
-\]
-\[
+\label{EQ14}
+\end{equation}
+\begin{equation}
 \Delta_{\delta,x_p}[f](\mathbf{x})|_{x_p=a, x_q=b1} = \Delta_{\delta,x_p}[f](\mathbf{x})|_{x_p=a, x_q=b2} \quad \forall a, b_1 \neq b_2, \delta \in \mathbb{R}, \delta \neq 0.
-\]
+\label{EQ15}
+\end{equation}
 \end{proof}
+
+El Teorema \ref{T1} es el que nos servirá en la segunda parte para diseñar el algoritmo de agrupamiento diferencial.
+
+\textbf{Notación:} Sea \( X \) el conjunto de variables de decisión \(\{x_1, \ldots, x_n\}\) y \( U_X \) el conjunto de vectores unitarios en el espacio de decisión \(\mathbb{R}^n\). Sea \( X_1 \) un subconjunto de variables de decisión \( X_1 \subset X \) y \( U_{X_1} \) un subconjunto de \( U_X \) tal que para cualquier vector unitario \( \mathbf{u} = (u_1, \ldots, u_n) \in U_{X_1} \), tenemos \( u_i = 0 \) si \( x_i \notin X_1 \).
+
+\begin{proposicion}
+\label{P1}
+Sea \( f : \mathbb{R}^n \to \overline{\mathbb{R}} \) una función diferenciable; \( X_1 \subset X \) y \( X_2 \subset X \) dos subconjuntos mutuamente excluyentes de variables de decisión: \( X_1 \cap X_2 = \emptyset \). Si existen dos vectores unitarios \( \mathbf{u}_1 \in U_{X_1} \) y \( \mathbf{u}_2 \in U_{X_2} \), y una solución candidata \( \mathbf{x}^* \) en el espacio de decisión tal que
+\begin{equation}
+D_{\mathbf{u}_1} D_{\mathbf{u}_2} f(\mathbf{x}^*) \neq 0
+\label{EQ16}
+\end{equation}
+entonces hay alguna interacción entre las variables de decisión en \( X_1 \) y \( X_2 \).
+\end{proposicion}
+
+\begin{proof}
+Sin pérdida de generalidad, asumimos que \( X_1 = \{x_{1,1}, \ldots, x_{1,p}\} \), \( X_2 = \{x_{2,1}, \ldots, x_{2,q}\} \), donde \( p \) y \( q \) son el número de variables de decisión en \( X_1 \) y \( X_2 \), respectivamente; \( \mathbf{u}_1 = (u_1^1, \ldots, u_1^n) \) y \( \mathbf{u}_2 = (u_2^1, \ldots, u_2^n) \). Según la derivada direccional,
+\begin{equation}
+D_{\mathbf{u}_1} D_{\mathbf{u}_2} f(\mathbf{x}) = \sum_{i=1}^{n} \sum_{j=1}^{n} \frac{\partial^2 f(\mathbf{x})}{\partial x_i \partial x_j} u_1^i u_2^j.
+\label{EQ17}
+\end{equation}
+Como \( \mathbf{u}_1 \) y \( \mathbf{u}_2 \) son dos vectores unitarios de \( U_{X_1} \) y \( U_{X_2} \), respectivamente, podemos obtener que
+\begin{equation}
+u_1^i = 0, \text{ si } x_i \notin X_1,
+\label{EQ18}
+\end{equation}
+\begin{equation}
+u_2^j = 0, \text{ si } x_j \notin X_2.
+\label{EQ19}
+\end{equation}
+Por lo tanto,
+\begin{equation}
+D_{\mathbf{u}_1} D_{\mathbf{u}_2} f(\mathbf{x}) = \sum_{i=1}^{p} \sum_{j=1}^{q} \frac{\partial^2 f(\mathbf{x})}{\partial x_{1,i} \partial x_{2,j}} u_1^{1,i} u_2^{2,j}.
+\label{EQ20}
+\end{equation}
+Si se cumple \eqref{EQ6},
+\begin{equation}
+\sum_{i=1}^{p} \sum_{j=1}^{q} \frac{\partial^2 f(\mathbf{x}^*)}{\partial x_{1,i} \partial x_{2,j}} u_1^{1,i} u_2^{2,j} \neq 0.
+\label{EQ21}
+\end{equation}
+Por lo tanto, existe al menos un par \((i, j)\), tal que
+\begin{equation}
+\frac{\partial^2 f(\mathbf{x}^*)}{\partial x_{1,i} \partial x_{2,j}} \neq 0.
+\label{EQ22}
+\end{equation}
+Basado en la Definición \ref{D5}, al menos un par de variables de decisión \( x_{1,i} \in X_1 \) y \( x_{2,j} \in X_2 \) interactúan.
+\end{proof}
+
+\begin{corolario}
+\label{C1}
+Sea \( f : \mathbb{R}^n \to \overline{\mathbb{R}} \) una función objetivo; \( X_1 \subset X \) y \( X_2 \subset X \) dos subconjuntos mutuamente excluyentes de variables de decisión: \( X_1 \cap X_2 = \emptyset \). Si existen dos vectores unitarios \( \mathbf{u}_1 \in U_{X_1} \) y \( \mathbf{u}_2 \in U_{X_2} \), dos números reales \( l_1, l_2 > 0 \), y una solución candidata \( \mathbf{x}^* \) en el espacio de decisión, tal que
+\begin{equation}
+f(\mathbf{x}^* + l_1 \mathbf{u}_1 + l_2 \mathbf{u}_2) - f(\mathbf{x}^* + l_2 \mathbf{u}_2) \neq f(\mathbf{x}^* + l_1 \mathbf{u}_1) - f(\mathbf{x}^*)
+\label{EQ23}
+\end{equation}
+entonces hay alguna interacción entre las variables de decisión en \( X_1 \) y \( X_2 \).
+\end{corolario}
+
+\begin{proof}
+Con la Proposición \ref{P1}, solo necesitamos probar la siguiente afirmación.
+
+\textbf{Afirmación 1:} Si existen dos vectores unitarios \( \mathbf{u}_1 \in U_{X_1} \) y \( \mathbf{u}_2 \in U_{X_2} \), dos números reales \( l_1, l_2 > 0 \), y una solución candidata \( \mathbf{x}^* \) en el espacio de decisión, tal que \eqref{EQ23} se cumple, entonces \eqref{EQ6} es verdadero.
+
+Es equivalente probar su contrarecíproco.
+
+\textbf{Afirmación 2:} Si para cualquier par de vectores unitarios \( \mathbf{u}_1 \in U_{X_1} \) y \( \mathbf{u}_2 \in U_{X_2} \), y para cualquier solución candidata \( \mathbf{x}^* \) en el espacio de decisión, se cumple la siguiente condición:
+\begin{equation}
+D_{\mathbf{u}_1} D_{\mathbf{u}_2} f(\mathbf{x}^*) = 0
+\label{EQ24}
+\end{equation}
+entonces
+\begin{equation}
+f(\mathbf{x}^* + l_1 \mathbf{u}_1 + l_2 \mathbf{u}_2) - f(\mathbf{x}^* + l_2 \mathbf{u}_2) = f(\mathbf{x}^* + l_1 \mathbf{u}_1) - f(\mathbf{x}^*)
+\label{EQ25}
+\end{equation}
+para cualquier \( l_1, l_2 > 0 \).
+
+Sea \( A_2 (\mathbf{x}^*) \) cualquier punto en \( \mathbb{R}^n \), y \( B_2 \) sea \( \mathbf{x}^* + l_2 \mathbf{u}_2 \), donde \( \mathbf{u}_2 \) es cualquier vector en \( U_{X_2} \) y \( l_2 \) es cualquier número real positivo. Sea \( C_2 \) cualquier punto en el segmento \( A_2 B_2 \). Por lo tanto, la longitud del segmento \( A_2 B_2 \) es \( l_2 \), y la coordenada de \( C_2 (\mathbf{x}) \) puede ser determinada de manera única por la longitud del segmento \( A_2 C_2 (s_2) \): \( \mathbf{x}(s_2) = \mathbf{x}^* + s_2 \mathbf{u}_2 \), \( s_2 \in [0, l_2] \). Si \eqref{EQ24} se cumple para cualquier solución candidata en el espacio de decisión, entonces
+\begin{equation}
+D_{\mathbf{u}_1} D_{\mathbf{u}_2} f(\mathbf{x}) = 0.
+\label{EQ27}
+\end{equation}
+Como \( D_{\mathbf{u}_1} D_{\mathbf{u}_2} f(\mathbf{x}) = D_{\mathbf{u}_2} D_{\mathbf{u}_1} f(\mathbf{x}) \), integrando ambos lados de \eqref{EQ27} a lo largo del segmento \( A_2 B_2 \), obtenemos
+\begin{equation}
+\int_0^{l_2} D_{\mathbf{u}_1} D_{\mathbf{u}_2} f(\mathbf{x}) ds_2 = \int_0^{l_2} D_{\mathbf{u}_2} D_{\mathbf{u}_1} f(\mathbf{x}) ds_2 = 0.
+\label{EQ28}
+\end{equation}
+Como
+\begin{equation}
+\int_0^{l_2} D_{\mathbf{u}_2} (D_{\mathbf{u}_1} f(\mathbf{x}(s_2))) ds_2 = D_{\mathbf{u}_1} f(\mathbf{x}(s_2)) \big|_{s_2=0}^{s_2=l_2},
+\label{EQ29}
+\end{equation}
+entonces,
+\begin{equation}
+D_{\mathbf{u}_1} f(\mathbf{x}(s_2)) \big|_{s_2=0}^{s_2=l_2} = 0
+\label{EQ30}
+\end{equation}
+y
+\begin{equation}
+D_{\mathbf{u}_1} f(\mathbf{x}^* + l_2 \mathbf{u}_2) - D_{\mathbf{u}_1} f(\mathbf{x}^*) = 0.
+\label{EQ31}
+\end{equation}
+Como \( A_2 (\mathbf{x}^*) \) es cualquier punto en \( \mathbb{R}^n \), entonces
+\begin{equation}
+D_{\mathbf{u}_1} f(\mathbf{x} + l_2 \mathbf{u}_2) = D_{\mathbf{u}_1} f(\mathbf{x}).
+\label{EQ32}
+\end{equation}
+
+Sea \( A_1 (\mathbf{x}^*) \) cualquier punto en \( \mathbb{R}^n \), y \( B_1 \) sea \( \mathbf{x}^* + l_1 \mathbf{u}_1 \), donde \( \mathbf{u}_1 \) es cualquier vector en \( U_{X_1} \) y \( l_1 \) es cualquier número real positivo. Sea \( C_1 \) cualquier punto en el segmento \( A_1 B_1 \). Por lo tanto, la longitud del segmento \( A_1 B_1 \) es \( l_1 \), y la coordenada de \( C_1 (\mathbf{x}) \) puede ser determinada de manera única por la longitud del segmento \( A_1 C_1 (s_1) \): \( \mathbf{x}(s_1) = \mathbf{x}^* + s_1 \mathbf{u}_1 \), \( s_1 \in [0, l_1] \). De manera similar, integrando ambos lados de \eqref{EQ32} a lo largo del segmento \( A_1 B_1 \), obtenemos
+\begin{equation}
+\int_0^{l_1} D_{\mathbf{u}_1} f(\mathbf{x}(s_1) + l_2 \mathbf{u}_2) ds_1 = \int_0^{l_1} D_{\mathbf{u}_1} f(\mathbf{x}(s_1)) ds_1.
+\label{EQ33}
+\end{equation}
+Por lo tanto,
+\begin{equation}
+f(\mathbf{x}^* + l_1 \mathbf{u}_1 + l_2 \mathbf{u}_2) - f(\mathbf{x}^* + l_2 \mathbf{u}_2) = f(\mathbf{x}^* + l_1 \mathbf{u}_1) - f(\mathbf{x}^*).
+\label{EQ34}
+\end{equation}
+
+Así, la Afirmación 2 queda probada, y la Afirmación 1 y el Corolario \ref{C1} son verdaderos.
+\end{proof}
+
 
 %\section{Problemas descomponibles mediante agrupamiento de variables}
 
