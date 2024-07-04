@@ -1,25 +1,49 @@
 module GeneticAlgorithms
 
-# Local Search Algorithms
-include("LocalSearch/mts_ls_1.jl")
-include("LocalSearch/lbfgsb.jl")
+    include("AbstractAlgorithm.jl")
+    include("Utils.jl")
 
-# Differential Evolution Algorithms
-include("DifferentialEvolution/shade.jl")
+    # Local Search Algorithms
+    include("LocalSearch/mts_ls_1.jl")
+    include("LocalSearch/lbfgsb.jl")
 
-# Variable Grouping Algorithms
-include("variablegrouping/dg2.jl")
-include("variablegrouping/erdg.jl")
+    # Differential Evolution Algorithms
+    include("DifferentialEvolution/shade.jl")
 
-# Hybrid Algorithms
-include("Memetic/dg2_shade_ils.jl")
-include("Memetic/erdg_shade_ils.jl")
-include("Memetic/shade_ils.jl")
+    # Variable Grouping Algorithms
+    include("VariableGrouping/dg2.jl")
+    include("VariableGrouping/erdg.jl")
 
-# Export modules or functions
-using .LocalSearch
-using .DifferentialEvolution
-using .VariableGrouping
-using .Memetic
+    # Hybrid Algorithms
+    include("Memetic/dg2_shade_ils.jl")
+    include("Memetic/erdg_shade_ils.jl")
+    include("Memetic/shade_ils.jl")
+
+    using .AbstractAlgorithm
+    using .Utils
+    # using .LocalSearch
+    using .DifferentialEvolution
+    # using .VariableGrouping
+    # using .Memetic
+
+    export VariableGroupingAlgorithm, 
+           GeneralAlgorithm, 
+           get_groups, 
+           num_groups, 
+           group_sizes,
+           population_size, 
+           num_dimensions, 
+           best_fitness, 
+           best_solution, 
+           all_fitness, 
+           all_population, 
+           bounds, 
+           init, 
+           update,
+           random_population, 
+           clip, 
+           EAresult, 
+           get_experiments_file, 
+           random_indexes
 
 end
