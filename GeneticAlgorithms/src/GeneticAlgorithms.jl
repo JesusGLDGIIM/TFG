@@ -4,8 +4,9 @@ module GeneticAlgorithms
     include("Utils.jl")
 
     # Local Search Algorithms
-    include("LocalSearch/mts_ls_1.jl")
-    include("LocalSearch/lbfgsb.jl")
+    include("LocalSearch/MyLocalSearch.jl")
+    #include("LocalSearch/mts_ls_1.jl")
+    #include("LocalSearch/lbfgsb.jl")
 
     # Differential Evolution Algorithms
     include("DifferentialEvolution/shade.jl")
@@ -21,7 +22,7 @@ module GeneticAlgorithms
 
     using .AbstractAlgorithm
     using .Utils
-    # using .LocalSearch
+    using .MyLocalSearch
     using .DifferentialEvolution
     # using .VariableGrouping
     # using .Memetic

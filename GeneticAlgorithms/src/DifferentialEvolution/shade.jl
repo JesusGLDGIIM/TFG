@@ -80,7 +80,7 @@ function AbstractAlgorithm.bounds(algo::SHADE)
 end
 
 function AbstractAlgorithm.init(algo::SHADE, fun)
-    algo.fitness = [fun(ind) for ind in eachcol(algo.population)]
+    algo.fitness = [fun(Vector{Float64}(ind)) for ind in eachcol(algo.population)]
     algo.best_fit = minimum(algo.fitness)
     algo.best_sol = algo.population[:,argmin(algo.fitness)]
     algo.currentEval += size(algo.population, 2)
@@ -128,7 +128,7 @@ function AbstractAlgorithm.update(algo::SHADE, fun)
         end
 
         for i in 1:size(algo.population, 2)
-            fitness_u = fun(u[:,i])
+            fitness_u = fun(Vector{Float64}(u[:,i]))
 
             if fitness_u < algo.fitness[i]
                 #println("Dimension memoria: ", length(algo.memory), "Dimension elemento: ", length(copy(algo.population[i])))

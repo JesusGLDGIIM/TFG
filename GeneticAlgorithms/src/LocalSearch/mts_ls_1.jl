@@ -1,5 +1,3 @@
-module LocalSearch
-
 using Metaheuristics
 
 export mts_ls_1
@@ -16,6 +14,4 @@ function mts_ls_1(fun, x0, lower_bounds, upper_bounds, max_evals)
     minimizer = result.minimizer
     num_evals = result.num_evaluations
     return minimizer, num_evals
-end
-
 end
