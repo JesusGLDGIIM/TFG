@@ -1,0 +1,13 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run Example SHADE with Local Search",
+            "type": "julia",
+            "request": "launch",
+            "program": "${workspaceFolder}/examples/example_shade_bl.jl",
+            "stopOnEntry": false,
+            "internalConsoleOptions": "openOnSessionStart"
+        }
+    ]
+}

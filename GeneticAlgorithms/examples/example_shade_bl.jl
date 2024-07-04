@@ -17,6 +17,7 @@ function example_SHADE_with_local_search()
     H = 10
     max_evals = 8000
     local_search_max_evals = 1000  # Límite de evaluaciones para la búsqueda local
+    SR = fill(0.5, dim)
 
     # Crear instancia de SHADE
     algo = DifferentialEvolution.SHADE(bounds, dim, pop_size, H, max_evals)
@@ -35,16 +36,14 @@ function example_SHADE_with_local_search()
     lower_bounds = fill(bounds[1], dim)
     upper_bounds = fill(bounds[2], dim)
 
-    println(lower_bounds)
-    println(upper_bounds)
     # Aplicar L-BFGS-B
     local_search_sol_lbfgsb, lbfgsb_evals = MyLocalSearch.lbfgsb(objective_function, best_sol, lower_bounds, upper_bounds, local_search_max_evals)
 
     # Aplicar MTS-LS-1
-    local_search_sol_mts_ls_1, mts_ls_1_evals = MyLocalSearch.mts_ls_1(objective_function, best_sol, lower_bounds, upper_bounds, local_search_max_evals)
+    local_search_sol_mts_ls_1, mts_ls_1_evals = MyLocalSearch.mtsls(objective_function, best_sol, AbstractAlgorithm.best_fitness(algo), lower_bounds[1], upper_bounds[1], local_search_max_evals, SR)
 
     # Elegir la mejor solución después de la búsqueda local
-    if objective_function(local_search_sol_lbfgsb) < objective_function(local_search_sol_mts_ls_1)
+    if objective_function(local_search_sol_lbfgsb) < objective_function(local_search_sol_mts_ls_1.solution)
         final_best_sol = local_search_sol_lbfgsb
         final_evals = lbfgsb_evals
     else
