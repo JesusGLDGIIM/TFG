@@ -88,25 +88,28 @@ function mtsls(fun, sol, fitness, lower, upper, maxevals, SR)
     initial_SR = 0.2 * (upper .- lower)
     SR = map(x -> ifelse(x < 1e-15, initial_SR, x), SR)  # Usar `map` para asegurar que `SR` se actualiza correctamente
 
-
-    return current_best, SR
+    final_result = EAresult(current_best.solution, current_best.fitness, totalevals)
+    return final_result, SR
 end
 
-
+#=
 # Ejemplo de uso
 function objective_function(x::Vector{Float64})
     return sum(x .^ 2)
 end
 
 dim = 10
-sol = rand(dim)
+sol = (rand(dim) .-0.5).* 10
 fitness = objective_function(sol)
 lower = fill(-5.0, dim)
 upper = fill(5.0, dim)
 maxevals = 1000
 SR = fill(0.5, dim)
 
+println("Inicial solution: ", sol)
 result, final_SR = mtsls(objective_function, sol, fitness, lower, upper, maxevals, SR)
 println("Best solution: ", result.solution)
 println("Best fitness: ", result.fitness)
+println("Evaluations: ", result.evaluations)
 println("Final SR: ", final_SR)
+=#

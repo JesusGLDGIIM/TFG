@@ -122,7 +122,9 @@ function AbstractAlgorithm.update(algo::SHADE, fun)
             idxchange = rand(length(v)) .< CRi
             # println(rand(length(v)))
             u[:, i] .= algo.population[:, i]
+            #println("u antes del cambio: ", u[:, i])
             u[idxchange, i] .= v[idxchange]
+            #println("u despues del cambio: ", u[:, i])
             F[i] = Fi
             CR[i] = CRi
         end
@@ -144,10 +146,9 @@ function AbstractAlgorithm.update(algo::SHADE, fun)
                     algo.best_fitness_history = vcat(algo.best_fitness_history, algo.best_fit)
                     algo.num_eval_history = vcat(algo.num_eval_history, algo.currentEval)
                 end
+                algo.population[:, i] = copy(u[:,i])
+                algo.fitness[i] = fitness_u
             end
-            algo.population[:, i] = copy(u[:,i])
-            algo.fitness[i] = fitness_u
-            
         end
 
         algo.currentEval += size(algo.population, 2)

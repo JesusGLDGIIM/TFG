@@ -113,11 +113,11 @@ function INTERACT(fun, fun_number, sub1, sub2, p1, p2, FEs, ub, lb, y)
     return sub1, FEs, y001
 end
 
-'
+#=
 # Función objetivo de prueba
 function test_fun(x, fun_number)
     # Ejemplo de una función simple: suma de cuadrados
-    return sum(x .^ 2) #+ (25 - x[1]*x[2])^2 + (x[1] + x[2])^2
+    return sum(x .^ 2) + (25 - x[1]*x[2])^2 + (x[1] + x[2])^2 + (25 - x[3]*x[4])^2 + (x[3] + x[4])^2
 end
 
 # Probando el algoritmo ERDG
@@ -130,4 +130,4 @@ groups, fEvalNum = ERDG(test_fun, fun_number, dim, lb, ub)
 
 println("Groups: ", groups)
 println("Function Evaluations: ", fEvalNum)
-'
+=#
