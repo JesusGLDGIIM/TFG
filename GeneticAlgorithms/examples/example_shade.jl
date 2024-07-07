@@ -20,7 +20,7 @@ max_evals=1000000
 
 # Crear instancia de SHADE y usar la interfaz común
 shade = SHADE(bounds, dim, pop_size, H, max_evals)
-init(shade, sphere)
+init(shade, sphere, H)
 update(shade, sphere)
 
 println("Best fitness: ", best_fitness(shade))

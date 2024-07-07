@@ -51,6 +51,14 @@ function SHADE(bounds::Vector{Float64}, dim::Int, pop_size::Int, H::Int, max_eva
     return SHADE(population, fitness, best_sol, best_fit, lower, upper, MemF, MemCR, H, k, pmin, currentEval, maxEval, best_fitness_history, num_eval_history)
 end
 
+function AbstractAlgorithm.total_evals(algo::SHADE)
+    return algo.maxEval
+end
+
+function AbstractAlgorithm.current_evals(algo::SHADE)
+    return algo.currentEval
+end
+
 function AbstractAlgorithm.population_size(algo::SHADE)
     return size(algo.population, 2)
 end
@@ -79,16 +87,19 @@ function AbstractAlgorithm.bounds(algo::SHADE)
     return [algo.lower_bounds, algo.upper_bounds]
 end
 
-function AbstractAlgorithm.init(algo::SHADE, fun)
+function AbstractAlgorithm.init(algo::SHADE, fun, H)
     algo.fitness = [fun(Vector{Float64}(ind)) for ind in eachcol(algo.population)]
     algo.best_fit = minimum(algo.fitness)
     algo.best_sol = algo.population[:,argmin(algo.fitness)]
     algo.currentEval += size(algo.population, 2)
+    algo.MemF = fill(0.5, H)
+    algo.MemCR = fill(0.5, H)
     return algo
 end
 
-function AbstractAlgorithm.update(algo::SHADE, fun)
-    while algo.currentEval < algo.maxEval
+function AbstractAlgorithm.update(algo::SHADE, fun, cicle_evals = algo.maxEval)
+    run_evals = 0
+    while algo.currentEval < algo.maxEval && run_evals < cicle_evals
         SCR = []
         SF = []
         F = zeros(size(algo.population, 2))
@@ -152,7 +163,7 @@ function AbstractAlgorithm.update(algo::SHADE, fun)
         end
 
         algo.currentEval += size(algo.population, 2)
-
+        run_evals += size(algo.population, 2)
         # algo.memory = limit_memory(algo.memory, size(algo.population, 2) * 2)
 
         if length(SCR) > 0 && length(SF) > 0
@@ -162,7 +173,7 @@ function AbstractAlgorithm.update(algo::SHADE, fun)
             algo.k = mod1(algo.k + 1, algo.H)
         end
     end
-    return algo
+    # return algo
 end
 
 function shade_clip(lower, upper, solution, original)

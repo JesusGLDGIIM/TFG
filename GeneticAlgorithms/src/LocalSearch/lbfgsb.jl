@@ -13,6 +13,7 @@ function lbfgsb(fun, x0, lower_bounds, upper_bounds, max_evals)
         Optim.Options(store_trace = true, show_trace = false, f_calls_limit = max_evals)
     )
     minimizer = Optim.minimizer(result)
+    fitness = Optim.minimum(result)
     num_evals = Optim.f_calls(result)
-    return minimizer, num_evals
+    return minimizer, fitness, num_evals
 end

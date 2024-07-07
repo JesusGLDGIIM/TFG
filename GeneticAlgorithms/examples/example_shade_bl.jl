@@ -23,7 +23,7 @@ function example_SHADE_with_local_search()
     algo = DifferentialEvolution.SHADE(bounds, dim, pop_size, H, max_evals)
 
     # Inicializar SHADE
-    AbstractAlgorithm.init(algo, objective_function)
+    AbstractAlgorithm.init(algo, objective_function, H)
 
     # Ejecutar SHADE
     algo = AbstractAlgorithm.update(algo, objective_function)
@@ -41,7 +41,7 @@ function example_SHADE_with_local_search()
 
     println("LSME: ", local_search_max_evals)
     # Aplicar L-BFGS-B
-    local_search_sol_lbfgsb, lbfgsb_evals = MyLocalSearch.lbfgsb(objective_function, best_sol, lower_bounds, upper_bounds, local_search_max_evals)
+    local_search_sol_lbfgsb, local_search_fitness_lbfgsb ,lbfgsb_evals = MyLocalSearch.lbfgsb(objective_function, best_sol, lower_bounds, upper_bounds, local_search_max_evals)
 
     
     # Elegir la mejor solución después de la búsqueda local

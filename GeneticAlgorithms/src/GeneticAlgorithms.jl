@@ -32,6 +32,8 @@ module GeneticAlgorithms
            get_groups, 
            num_groups, 
            group_sizes,
+           total_evals,
+           current_evals,
            population_size, 
            num_dimensions, 
            best_fitness, 

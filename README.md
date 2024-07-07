@@ -1,7 +1,7 @@
 # TFG
 Repositorio para mi TFG 2023/2024 UGR
 
-## Code
+## GeneticAlgorithms
 Contiene el código desarrollado para el proyecto
 
 ## TFG-Latex

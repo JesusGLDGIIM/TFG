@@ -23,6 +23,14 @@ end
 # A optimizing algorithm should implement this methods
 abstract type GeneralAlgorithm end
 
+function total_evals(algo::GeneralAlgorithm)
+    error("total_evals not implemented")
+end
+
+function current_evals(algo::GeneralAlgorithm)
+    error("current_evals not implemented")
+end
+
 function population_size(algo::GeneralAlgorithm)
     error("population_size not implemented")
 end
