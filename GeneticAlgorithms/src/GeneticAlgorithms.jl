@@ -16,16 +16,20 @@ module GeneticAlgorithms
     include("VariableGrouping/erdg.jl")
 
     # Hybrid Algorithms
-    include("Memetic/dg2_shade_ils.jl")
-    include("Memetic/erdg_shade_ils.jl")
-    include("Memetic/shade_ils.jl")
+    include("Memetic/memetic.jl")
+    # include("Memetic/dg2_shade_ils.jl")
+    # include("Memetic/erdg_shade_ils.jl")
+    # include("Memetic/shade_ils.jl")
+
+    include("../test/benchmark.jl")
 
     using .AbstractAlgorithm
     using .Utils
     using .MyLocalSearch
     using .DifferentialEvolution
+    using .Benchmark
     # using .VariableGrouping
-    # using .Memetic
+    using .Memetic
 
     export VariableGroupingAlgorithm, 
            GeneralAlgorithm, 
@@ -48,5 +52,7 @@ module GeneticAlgorithms
            EAresult, 
            get_experiments_file, 
            random_indexes
-
+           initialize_state,
+           benchmark_func,
+           shadeils
 end

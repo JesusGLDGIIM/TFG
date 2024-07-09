@@ -7,11 +7,11 @@ struct EAresult
     evaluations::Int
 end
 
-function _mtsls_improve_dim(fun, sol, best_fitness, i, check, SR)
+function _mtsls_improve_dim(fun, sol, best_fitness, i, check, SR, state)
     newsol = copy(sol)
     newsol[i] -= SR[i]
     newsol = check(newsol)
-    fitness_newsol = fun(newsol)
+    fitness_newsol = fun(newsol, state)
     evals = 1
 
     if fitness_newsol < best_fitness
@@ -21,7 +21,7 @@ function _mtsls_improve_dim(fun, sol, best_fitness, i, check, SR)
         newsol = copy(sol)
         newsol[i] += 0.5 * SR[i]
         newsol = check(newsol)
-        fitness_newsol = fun(newsol)
+        fitness_newsol = fun(newsol, state)
         evals += 1
 
         if fitness_newsol < best_fitness
@@ -33,7 +33,7 @@ function _mtsls_improve_dim(fun, sol, best_fitness, i, check, SR)
     return EAresult(sol, best_fitness, evals)
 end
 
-function mtsls(fun, sol, fitness, lower, upper, maxevals, SR)
+function mtsls(fun, sol, fitness, lower, upper, maxevals, SR, state)
     dim = length(sol)
     improved_dim = falses(dim)
     check = x -> clamp.(x, lower, upper)
@@ -45,7 +45,7 @@ function mtsls(fun, sol, fitness, lower, upper, maxevals, SR)
         dim_sorted = randperm(dim)
 
         for i in dim_sorted
-            result = _mtsls_improve_dim(fun, current_best.solution, current_best.fitness, i, check, SR)
+            result = _mtsls_improve_dim(fun, current_best.solution, current_best.fitness, i, check, SR, state)
             totalevals += result.evaluations
             improve = max(current_best.fitness - result.fitness, 0)
             improvement[i] = improve
@@ -64,7 +64,7 @@ function mtsls(fun, sol, fitness, lower, upper, maxevals, SR)
 
     while totalevals < maxevals
         i = dim_sorted[d]
-        result = _mtsls_improve_dim(fun, current_best.solution, current_best.fitness, i, check, SR)
+        result = _mtsls_improve_dim(fun, current_best.solution, current_best.fitness, i, check, SR, state)
         totalevals += result.evaluations
         improve = max(current_best.fitness - result.fitness, 0)
         improvement[i] = improve

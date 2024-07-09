@@ -87,8 +87,8 @@ function AbstractAlgorithm.bounds(algo::SHADE)
     return [algo.lower_bounds, algo.upper_bounds]
 end
 
-function AbstractAlgorithm.init(algo::SHADE, fun, H)
-    algo.fitness = [fun(Vector{Float64}(ind)) for ind in eachcol(algo.population)]
+function AbstractAlgorithm.init(algo::SHADE, fun, state, H)
+    algo.fitness = [fun(Vector{Float64}(ind), state) for ind in eachcol(algo.population)]
     algo.best_fit = minimum(algo.fitness)
     algo.best_sol = algo.population[:,argmin(algo.fitness)]
     algo.currentEval += size(algo.population, 2)
@@ -97,7 +97,7 @@ function AbstractAlgorithm.init(algo::SHADE, fun, H)
     return algo
 end
 
-function AbstractAlgorithm.update(algo::SHADE, fun, cicle_evals = algo.maxEval)
+function AbstractAlgorithm.update(algo::SHADE, fun, state, cicle_evals = algo.maxEval)
     run_evals = 0
     while algo.currentEval < algo.maxEval && run_evals < cicle_evals
         SCR = []
@@ -141,7 +141,7 @@ function AbstractAlgorithm.update(algo::SHADE, fun, cicle_evals = algo.maxEval)
         end
 
         for i in 1:size(algo.population, 2)
-            fitness_u = fun(Vector{Float64}(u[:,i]))
+            fitness_u = fun(Vector{Float64}(u[:,i]), state)
 
             if fitness_u < algo.fitness[i]
                 #println("Dimension memoria: ", length(algo.memory), "Dimension elemento: ", length(copy(algo.population[i])))
@@ -156,6 +156,7 @@ function AbstractAlgorithm.update(algo::SHADE, fun, cicle_evals = algo.maxEval)
                     numEvalFound = algo.currentEval
                     algo.best_fitness_history = vcat(algo.best_fitness_history, algo.best_fit)
                     algo.num_eval_history = vcat(algo.num_eval_history, algo.currentEval)
+                    # println("Iteración: ", algo.currentEval, " Mejor fitness hasta ahora: ", algo.best_fit)
                 end
                 algo.population[:, i] = copy(u[:,i])
                 algo.fitness[i] = fitness_u
@@ -177,6 +178,15 @@ function AbstractAlgorithm.update(algo::SHADE, fun, cicle_evals = algo.maxEval)
 end
 
 function shade_clip(lower, upper, solution, original)
+    # Crear una copia de la solución para compararla después del recorte
+    clip_sol = clamp.(solution, lower, upper)
+    
+    # Si la solución ya está dentro de los límites, devolverla tal cual
+    if all(solution .== clip_sol)
+        return solution
+    end
+
+    # Ajustar los valores fuera de los límites
     for i in eachindex(solution)
         if solution[i] < lower
             solution[i] = (original[i] + lower) / 2.0
@@ -186,6 +196,7 @@ function shade_clip(lower, upper, solution, original)
     end
     return solution
 end
+
 
 function limit_memory(memory::Vector{Vector{Float64}}, memorySize::Int)
     if length(memory) > memorySize
