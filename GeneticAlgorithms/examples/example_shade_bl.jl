@@ -23,7 +23,7 @@ function example_SHADE_with_local_search()
     algo = DifferentialEvolution.SHADE(bounds, dim, pop_size, H, max_evals)
 
     # Inicializar SHADE
-    AbstractAlgorithm.init(algo, objective_function, H)
+    AbstractAlgorithm.init(algo, objective_function,)
 
     # Ejecutar SHADE
     algo = AbstractAlgorithm.update(algo, objective_function)

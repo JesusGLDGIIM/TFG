@@ -1,9 +1,8 @@
+# Deprecated
 module Benchmark
 using MAT
 
 export BenchmarkState, benchmark_func, initialize_state
-
-const eval_count = Ref(0)
 
 struct BenchmarkState
     xopt::Vector{Float64}
@@ -102,9 +101,9 @@ end
 
 # Funciones de benchmark de f1 a f15
 function f1(x, state::BenchmarkState)
-    if !checkBounds(x, state.lb, state.ub)
-        error("Bounds check failed")
-    end
+    # if !checkBounds(x, state.lb, state.ub)
+    #     error("Bounds check failed")
+    # end
     eval_count[] += 1
     if eval_count[] % 25000 == 0
          println("EvalCount: ", eval_count[])

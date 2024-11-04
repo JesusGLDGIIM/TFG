@@ -10,6 +10,7 @@ module DifferentialEvolution
 
 using ..AbstractAlgorithm
 using ..Utils
+using Random
 
 export SHADE
 
@@ -22,7 +23,7 @@ mutable struct SHADE <: AbstractAlgorithm.GeneralAlgorithm
     upper_bounds::Float64
     MemF::Vector{Float64}
     MemCR::Vector{Float64}
-    # memory::Vector{Vector{Float64}}
+    memory::Vector{Vector{Float64}}
     H::Int
     k::Int
     pmin::Float64
@@ -30,6 +31,7 @@ mutable struct SHADE <: AbstractAlgorithm.GeneralAlgorithm
     maxEval::Int
     best_fitness_history::Vector{Float64}
     num_eval_history::Vector{Int}
+    #group::Vector{Int}
 end
 
 function SHADE(bounds::Vector{Float64}, dim::Int, pop_size::Int, H::Int, max_evals::Int)
@@ -41,14 +43,14 @@ function SHADE(bounds::Vector{Float64}, dim::Int, pop_size::Int, H::Int, max_eva
     best_fit = Inf
     MemF = fill(0.5, H)
     MemCR = fill(0.5, H)
-    #memory = [copy(pop) for pop in population]
+    memory = [copy(col) for col in eachcol(population)]
     k = 1
     pmin = 2.0 / pop_size
     currentEval = 0
     maxEval = max_evals
     best_fitness_history = Float64[]
     num_eval_history = Int[]
-    return SHADE(population, fitness, best_sol, best_fit, lower, upper, MemF, MemCR, H, k, pmin, currentEval, maxEval, best_fitness_history, num_eval_history)
+    return SHADE(population, fitness, best_sol, best_fit, lower, upper, MemF, MemCR, memory, H, k, pmin, currentEval, maxEval, best_fitness_history, num_eval_history)
 end
 
 function AbstractAlgorithm.total_evals(algo::SHADE)
@@ -87,8 +89,8 @@ function AbstractAlgorithm.bounds(algo::SHADE)
     return [algo.lower_bounds, algo.upper_bounds]
 end
 
-function AbstractAlgorithm.init(algo::SHADE, fun, state, H)
-    algo.fitness = [fun(Vector{Float64}(ind), state) for ind in eachcol(algo.population)]
+function AbstractAlgorithm.init(algo::SHADE, fun, H)
+    algo.fitness = [fun(Vector{Float64}(ind)) for ind in eachcol(algo.population)]
     algo.best_fit = minimum(algo.fitness)
     algo.best_sol = algo.population[:,argmin(algo.fitness)]
     algo.currentEval += size(algo.population, 2)
@@ -97,7 +99,7 @@ function AbstractAlgorithm.init(algo::SHADE, fun, state, H)
     return algo
 end
 
-function AbstractAlgorithm.update(algo::SHADE, fun, state, cicle_evals = algo.maxEval)
+function AbstractAlgorithm.update(algo::SHADE, fun, group, cicle_evals = algo.maxEval)
     run_evals = 0
     while algo.currentEval < algo.maxEval && run_evals < cicle_evals
         SCR = []
@@ -117,8 +119,13 @@ function AbstractAlgorithm.update(algo::SHADE, fun, state, cicle_evals = algo.ma
             CRi = clamp(randn() * 0.1 + meanCR, 0, 1)
             p = rand() * (0.2 - algo.pmin) + algo.pmin
 
+             # Seleccionar r1 de la población excluyendo i
             r1 = random_indexes(1, size(algo.population, 2), [i])
-            r2 = random_indexes(1, size(algo.population, 2), [i,r1])
+            # Seleccionar r2 de la memoria excluyendo i y r1
+            r2_idx = rand(1:length(algo.memory))  # Selecciona un índice aleatorio de la memoria
+            r2 = r2_idx
+            xr1 = algo.population[:, r1]
+            xr2 = algo.memory[r2]
 
             #println("r1: ", r1, "r2: ", r2)
 
@@ -127,21 +134,33 @@ function AbstractAlgorithm.update(algo::SHADE, fun, state, cicle_evals = algo.ma
             best_index = rand(best_indices)
             xbest = algo.population[best_index]
 
-            v = algo.population[:, i] .+ Fi * (xbest .- algo.population[:, i]) .+ Fi .* (algo.population[:, r1] .- algo.population[:, r2])
+            mask = falses(length(algo.best_sol))
+            mask[group] .= true
+
+            v = copy(algo.population[:, i])
+            v[group] .= algo.population[:, i][group] .+ Fi .* (xbest[group] .- algo.population[:, i][group]) .+ Fi .* (xr1[group] .- xr2[group])
             v = shade_clip(algo.lower_bounds, algo.upper_bounds, v, algo.population[:, i])
 
-            idxchange = rand(length(v)) .< CRi
-            # println(rand(length(v)))
+            #v = algo.population[:, i] .+ Fi * (xbest .- algo.population[:, i]) .+ Fi .* (xr1 .- xr2)
+            #v = shade_clip(algo.lower_bounds, algo.upper_bounds, v, algo.population[:, i])
+
+            idxchange = (rand(length(v)) .< CRi) .& mask
             u[:, i] .= algo.population[:, i]
-            #println("u antes del cambio: ", u[:, i])
             u[idxchange, i] .= v[idxchange]
+
+            #idxchange = rand(length(v)) .< CRi
+            # println(rand(length(v)))
+            #u[:, i] .= algo.population[:, i]
+            #println("u antes del cambio: ", u[:, i])
+            #u[idxchange, i] .= v[idxchange]
             #println("u despues del cambio: ", u[:, i])
+
             F[i] = Fi
             CR[i] = CRi
         end
 
         for i in 1:size(algo.population, 2)
-            fitness_u = fun(Vector{Float64}(u[:,i]), state)
+            fitness_u = fun(Vector{Float64}(u[:,i]))
 
             if fitness_u < algo.fitness[i]
                 #println("Dimension memoria: ", length(algo.memory), "Dimension elemento: ", length(copy(algo.population[i])))
@@ -160,12 +179,15 @@ function AbstractAlgorithm.update(algo::SHADE, fun, state, cicle_evals = algo.ma
                 end
                 algo.population[:, i] = copy(u[:,i])
                 algo.fitness[i] = fitness_u
+
+                # Agregar a la memoria
+                push!(algo.memory, copy(algo.population[:, i]))
             end
         end
 
         algo.currentEval += size(algo.population, 2)
         run_evals += size(algo.population, 2)
-        # algo.memory = limit_memory(algo.memory, size(algo.population, 2) * 2)
+        algo.memory = limit_memory(algo.memory, size(algo.population, 2) * 2)
 
         if length(SCR) > 0 && length(SF) > 0
             Fnew, CRnew = update_FCR(SF, SCR, weights)

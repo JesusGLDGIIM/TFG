@@ -7,11 +7,11 @@ struct EAresult
     evaluations::Int
 end
 
-function _mtsls_improve_dim(fun, sol, best_fitness, i, check, SR, state)
+function _mtsls_improve_dim(fun, sol, best_fitness, i, check, SR)
     newsol = copy(sol)
     newsol[i] -= SR[i]
     newsol = check(newsol)
-    fitness_newsol = fun(newsol, state)
+    fitness_newsol = fun(newsol)
     evals = 1
 
     if fitness_newsol < best_fitness
@@ -21,7 +21,7 @@ function _mtsls_improve_dim(fun, sol, best_fitness, i, check, SR, state)
         newsol = copy(sol)
         newsol[i] += 0.5 * SR[i]
         newsol = check(newsol)
-        fitness_newsol = fun(newsol, state)
+        fitness_newsol = fun(newsol)
         evals += 1
 
         if fitness_newsol < best_fitness
@@ -33,8 +33,9 @@ function _mtsls_improve_dim(fun, sol, best_fitness, i, check, SR, state)
     return EAresult(sol, best_fitness, evals)
 end
 
-function mtsls(fun, sol, fitness, lower, upper, maxevals, SR, state)
-    dim = length(sol)
+function mtsls(fun, sol, fitness, lower, upper, maxevals, SR, group)
+    #dim = length(sol)
+    dim = length(group)
     improved_dim = falses(dim)
     check = x -> clamp.(x, lower, upper)
     current_best = EAresult(sol, fitness, 0)
@@ -45,7 +46,9 @@ function mtsls(fun, sol, fitness, lower, upper, maxevals, SR, state)
         dim_sorted = randperm(dim)
 
         for i in dim_sorted
-            result = _mtsls_improve_dim(fun, current_best.solution, current_best.fitness, i, check, SR, state)
+            index = group[i]
+            println("Index: ", index)
+            result = _mtsls_improve_dim(fun, current_best.solution, current_best.fitness, index, check, SR)
             totalevals += result.evaluations
             improve = max(current_best.fitness - result.fitness, 0)
             improvement[i] = improve
@@ -54,7 +57,7 @@ function mtsls(fun, sol, fitness, lower, upper, maxevals, SR, state)
                 improved_dim[i] = true
                 current_best = result
             else
-                SR[i] /= 2
+                SR[index] /= 2
             end
         end
 
@@ -64,7 +67,9 @@ function mtsls(fun, sol, fitness, lower, upper, maxevals, SR, state)
 
     while totalevals < maxevals
         i = dim_sorted[d]
-        result = _mtsls_improve_dim(fun, current_best.solution, current_best.fitness, i, check, SR, state)
+        index = group[dim_sorted[d]]
+        println("Index: ", index)
+        result = _mtsls_improve_dim(fun, current_best.solution, current_best.fitness, index, check, SR)
         totalevals += result.evaluations
         improve = max(current_best.fitness - result.fitness, 0)
         improvement[i] = improve
@@ -106,8 +111,10 @@ upper = fill(5.0, dim)
 maxevals = 1000
 SR = fill(0.5, dim)
 
+group = [1, 5, 6, 10]
+
 println("Inicial solution: ", sol)
-result, final_SR = mtsls(objective_function, sol, fitness, lower, upper, maxevals, SR)
+result, final_SR = mtsls(objective_function, sol, fitness, lower, upper, maxevals, SR, group)
 println("Best solution: ", result.solution)
 println("Best fitness: ", result.fitness)
 println("Evaluations: ", result.evaluations)
