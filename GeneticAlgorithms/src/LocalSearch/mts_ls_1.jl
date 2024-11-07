@@ -47,7 +47,7 @@ function mtsls(fun, sol, fitness, lower, upper, maxevals, SR, group)
 
         for i in dim_sorted
             index = group[i]
-            println("Index: ", index)
+            # println("Index: ", index)
             result = _mtsls_improve_dim(fun, current_best.solution, current_best.fitness, index, check, SR)
             totalevals += result.evaluations
             improve = max(current_best.fitness - result.fitness, 0)
@@ -68,7 +68,7 @@ function mtsls(fun, sol, fitness, lower, upper, maxevals, SR, group)
     while totalevals < maxevals
         i = dim_sorted[d]
         index = group[dim_sorted[d]]
-        println("Index: ", index)
+        # println("Index: ", index)
         result = _mtsls_improve_dim(fun, current_best.solution, current_best.fitness, index, check, SR)
         totalevals += result.evaluations
         improve = max(current_best.fitness - result.fitness, 0)

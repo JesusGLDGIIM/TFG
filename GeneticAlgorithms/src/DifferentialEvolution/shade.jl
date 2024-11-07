@@ -34,7 +34,7 @@ mutable struct SHADE <: AbstractAlgorithm.GeneralAlgorithm
     #group::Vector{Int}
 end
 
-function SHADE(bounds::Vector{Float64}, dim::Int, pop_size::Int, H::Int, max_evals::Int)
+function SHADE(bounds::Vector{Float64}, dim::Int, pop_size::Int, H::Int, max_evals::Int, initial_eval::Int)
     lower = bounds[1]
     upper = bounds[2]
     population = random_population(lower, upper, dim, pop_size)
@@ -46,7 +46,7 @@ function SHADE(bounds::Vector{Float64}, dim::Int, pop_size::Int, H::Int, max_eva
     memory = [copy(col) for col in eachcol(population)]
     k = 1
     pmin = 2.0 / pop_size
-    currentEval = 0
+    currentEval = initial_eval
     maxEval = max_evals
     best_fitness_history = Float64[]
     num_eval_history = Int[]
@@ -132,7 +132,7 @@ function AbstractAlgorithm.update(algo::SHADE, fun, group, cicle_evals = algo.ma
             num_best = max(1, round(Int, p * size(algo.population, 2)))
             best_indices = partialsortperm(algo.fitness, 1:num_best)
             best_index = rand(best_indices)
-            xbest = algo.population[best_index]
+            xbest = algo.population[:, best_index]
 
             mask = falses(length(algo.best_sol))
             mask[group] .= true
@@ -154,7 +154,7 @@ function AbstractAlgorithm.update(algo::SHADE, fun, group, cicle_evals = algo.ma
             #println("u antes del cambio: ", u[:, i])
             #u[idxchange, i] .= v[idxchange]
             #println("u despues del cambio: ", u[:, i])
-
+            
             F[i] = Fi
             CR[i] = CRi
         end

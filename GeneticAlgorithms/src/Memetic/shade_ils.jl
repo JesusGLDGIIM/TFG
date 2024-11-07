@@ -115,13 +115,13 @@ function apply_localsearch(name, method, fitness_fun, bounds, current_best, curr
         res, SR = mtsls(fitness_fun, current_best, current_best_fitness, lower, upper, maxevals, SR, group)
         sol = res.solution
         fit = res.fitness
-        funcalls = maxevals
+        funcalls = res.evaluations
     else
         error("Method not implemented")
     end
 
     if fit <= current_best_fitness
-        println(get_improvement("$method $name", current_best_fitness, fit))
+        # println(get_improvement("$method $name", current_best_fitness, fit))
         return EAresult(sol, fit, funcalls)
     else
         return EAresult(current_best, current_best_fitness, funcalls)
@@ -144,7 +144,7 @@ end
 
 global SR_MTS
 
-function shadeils(fitness_fun, funinfo, dim, evals, groups, popsize = 100, threshold = 0.05, p = 0.1, H = 100)    
+function shadeils(fitness_fun, funinfo, dim, evals, initial_eval, groups, popsize = 100, threshold = 0.05, p = 0.1, H = 100)    
     lower = funinfo["lower"]
     upper = funinfo["upper"]
     evals = copy(evals)
@@ -155,11 +155,12 @@ function shadeils(fitness_fun, funinfo, dim, evals, groups, popsize = 100, thres
     maxevals = Int(last(evals))
     totalevals = 0
     num_groups = length(groups)
+    # println("Num groups: ", num_groups)
     group_index = 1
     group = groups[group_index]
-    global aux
+    #global aux
 
-    shade = SHADE(bound, dim, popsize, H, maxevals)
+    shade = SHADE(bound, dim, popsize, H, maxevals, initial_eval)
     DifferentialEvolution.init(shade, fitness_fun, H)
 
     current_best = EAresult(AbstractAlgorithm.best_solution(shade), AbstractAlgorithm.best_fitness(shade), AbstractAlgorithm.current_evals(shade))
@@ -173,7 +174,7 @@ function shadeils(fitness_fun, funinfo, dim, evals, groups, popsize = 100, thres
     SR = reset_ls(dim, lower, upper)
     methods = ["mts", "grad"]
 
-    pool_global = PoolLast(methods)
+    # pool_global = PoolLast(methods)
     pool = PoolLast(methods)
 
     num_worse = 0
@@ -184,69 +185,76 @@ function shadeils(fitness_fun, funinfo, dim, evals, groups, popsize = 100, thres
 
     totalevals = AbstractAlgorithm.current_evals(shade)
 
+    improvement = 0
+
     while totalevals < maxevals
-        factor = length(group)/dim
-
-        method = ""
-        
         current_best = EAresult(current_best_solution, current_best_fitness, 0)
-
-        method = get_new(pool)
-
         previous_fitness = current_best.fitness
+        method = get_new(pool)
+        for g in 1:num_groups
+            group = groups[g]
 
-        if apply_de
-            AbstractAlgorithm.update(shade, fitness_fun, group, evals_de * factor)
-            improvement = current_best.fitness - best_fitness(shade)
-            totalevals += evals_de
-            evals = check_evals(totalevals, evals, best_fitness(shade), best_global_fitness)
-            current_best = EAresult(best_solution(shade),best_fitness(shade), totalevals)
-            # println("Lower: ", lower, " Upper: ", upper)
-            # checkBounds(current_best.solution, lower, upper)
+            factor = length(group)/dim*10
+            if num_groups == 1
+                factor = 1
+            end
+            # println("Factor: ", factor)
+
+            if apply_de
+                AbstractAlgorithm.update(shade, fitness_fun, group, evals_de * factor)
+                #improvement = current_best.fitness - best_fitness(shade)
+                totalevals += max(popsize, evals_de * factor)
+                evals = check_evals(totalevals, evals, best_fitness(shade), best_global_fitness)
+                current_best = EAresult(best_solution(shade), best_fitness(shade), totalevals)
+                # println("Lower: ", lower, " Upper: ", upper)
+                # checkBounds(current_best.solution, lower, upper)
+            end
+
+            if apply_ls
+                # println("before ls $method")
+                # eval_count[] = 0
+                # checkBounds(current_best.solution, lower, upper)
+                result = apply_localsearch("Local", method, fitness_fun, bounds_partial, current_best.solution, current_best.fitness, evals_ls*factor, SR, group)
+                # println("after ls $method")
+                checkBounds(result.solution, lower, upper)
+
+                improvement += get_ratio_improvement(current_best_fitness, result.fitness)
+                totalevals += result.evaluations
+                evals = check_evals(totalevals, evals, result.fitness, best_global_fitness)
+                current_best = result
+
+                best_ind = argmin(all_fitness(shade))
+
+                shade.population[:,best_ind] = copy(current_best.solution)
+                shade.fitness[best_ind] = current_best.fitness
+                
+                #improvement!(pool, method, improvement)
+            end
+
+            current_best_solution = copy(current_best.solution)
+            current_best_fitness = current_best.fitness
+
+            if current_best_fitness < best_global_fitness
+                best_global_fitness = current_best_fitness
+                best_global_solution = copy(current_best_solution)
+            end
+
+            if current_best_fitness < best_fitness(shade)
+                shade.best_sol = copy(current_best_solution)
+                shade.best_fit = current_best_fitness
+            end
         end
 
-        if apply_ls
-            println("before ls $method")
-            # eval_count[] = 0
-            # checkBounds(current_best.solution, lower, upper)
-            result = apply_localsearch("Local", method, fitness_fun, bounds_partial, current_best.solution, current_best.fitness, evals_ls*factor, SR, group)
-            println("after ls $method")
-            checkBounds(result.solution, lower, upper)
-
-            improvement = get_ratio_improvement(current_best_fitness, result.fitness)
-            totalevals += result.evaluations
-            evals = check_evals(totalevals, evals, result.fitness, best_global_fitness)
-            current_best = result
-
-            best_ind = argmin(all_fitness(shade))
-
-            shade.population[:,best_ind] = copy(current_best.solution)
-            shade.fitness[best_ind] = current_best.fitness
-            
-            improvement!(pool, method, improvement)
-        end
-
-        current_best_solution = copy(current_best.solution)
-        current_best_fitness = current_best.fitness
-
-        if current_best_fitness < best_global_fitness
-            best_global_fitness = current_best_fitness
-            best_global_solution = copy(current_best_solution)
-        end
-
-        if current_best_fitness < best_fitness(shade)
-            shade.best_sol = copy(current_best_solution)
-            shade.best_fit = current_best_fitness
-        end
-
+        improvement!(pool, method, improvement)
+        improvement = 0
         ratio_improvement = previous_fitness == 0 ? 1 : get_ratio_improvement(previous_fitness, current_best.fitness)
-        @printf("TotalImprovement[%d%%] %.3e => %.3e (%d)\tRestart: %d\n", (round(100 * ratio_improvement)), previous_fitness, current_best.fitness, num_worse, num_restarts)
+        # @printf("TotalImprovement[%d%%] %.3e => %.3e (%d)\tRestart: %d\n", (round(100 * ratio_improvement)), previous_fitness, current_best.fitness, num_worse, num_restarts)
 
         if ratio_improvement >= threshold
             num_worse = 0
         else
             num_worse += 1
-            println("Pools Improvements: $(Dict(pool.improvements))")
+            # println("Pools Improvements: $(Dict(pool.improvements))")
 
             SR = reset_ls(dim, lower, upper, method)
         end
@@ -254,7 +262,7 @@ function shadeils(fitness_fun, funinfo, dim, evals, groups, popsize = 100, thres
         # Arreglar el restart
         if num_worse >= 3
             num_worse = 0
-            @printf("Restart: %.2e for %.2f with %d evaluations\n", current_best.fitness, ratio_improvement, totalevals)
+            # @printf("Restart: %.2e for %.2f with %d evaluations\n", current_best.fitness, ratio_improvement, totalevals)
             posi = rand(1:popsize)
             new_solution = clamp.(rand(dim) * 0.02 .- 0.01 .+ shade.population[:,posi], lower, upper)
             current_best = EAresult(new_solution, fitness_fun(new_solution), 0)
@@ -263,20 +271,18 @@ function shadeils(fitness_fun, funinfo, dim, evals, groups, popsize = 100, thres
 
             reset_de(shade, fitness_fun, H, new_solution)
             totalevals += popsize
-            reset!(pool_global)
+            # reset!(pool_global)
             reset!(pool)
             SR = reset_ls(dim, lower, upper)
             num_restarts += 1
         end
 
-        @printf("%.2e(%.2e): with %d evaluations\n", current_best.fitness, best_global_fitness, totalevals)
-
-        group_index = mod1(group_index + 1, num_groups)
-        group = groups[group_index]
+        # @printf("%.2e(%.2e): with %d evaluations\n", current_best.fitness, best_global_fitness, totalevals)
 
         if totalevals >= maxevals
             break
         end 
+        
     end
 
     # @printf("%.2e,%s,%d\n", abs(best_global_fitness), join(best_global_solution, " "), totalevals)
@@ -299,7 +305,7 @@ end
 function check_evals(totalevals, evals, bestFitness, globalBestFitness)
     if !isempty(evals) && totalevals >= evals[1]
         best = min(bestFitness, globalBestFitness)
-        @printf("[%.1e]: %e,%d\n", evals[1], best, totalevals)
+        # @printf("[%.1e]: %e,%d\n", evals[1], best, totalevals)
         evals = evals[2:end]
     end
     return evals
