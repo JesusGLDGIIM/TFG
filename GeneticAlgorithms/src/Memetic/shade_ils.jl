@@ -153,7 +153,7 @@ function shadeils(fitness_fun, funinfo, dim, evals, initial_eval, groups, popsiz
     bounds_partial = (fill(lower, dim), fill(upper, dim))
     popsize = min(popsize, 100)
     maxevals = Int(last(evals))
-    totalevals = 0
+    totalevals = initial_eval
     num_groups = length(groups)
     # println("Num groups: ", num_groups)
     group_index = 1
@@ -242,6 +242,10 @@ function shadeils(fitness_fun, funinfo, dim, evals, initial_eval, groups, popsiz
             if current_best_fitness < best_fitness(shade)
                 shade.best_sol = copy(current_best_solution)
                 shade.best_fit = current_best_fitness
+            end
+
+            if totalevals >= maxevals
+                break
             end
         end
 

@@ -93,8 +93,8 @@ function evaluate_shade(NP, runs, maxevals, H, func_num)
 
     initial_eval = 0
 
-    cec2013_init(func_num, "test/cec2013lsgo")
-    cec2013_set_data_dir("test/cec2013lsgo/cdatafiles")
+    cec2013_init(func_num, "../../test/cec2013lsgo")
+    cec2013_set_data_dir("../../test/cec2013lsgo/cdatafiles")
 
     for run in 1:runs
         fitness_fun = x -> cec2013_eval_sol(x)
@@ -134,8 +134,8 @@ function evaluate_ERDGshadeils(NP, runs, evals, func_num)
         D = 905
     end
 
-    cec2013_init(func_num, "test/cec2013lsgo")
-    cec2013_set_data_dir("test/cec2013lsgo/cdatafiles")
+    cec2013_init(func_num, "../../test/cec2013lsgo")
+    cec2013_set_data_dir("../../test/cec2013lsgo/cdatafiles")
 
     funinfo = Dict("lower" => lb, "upper" => ub)
         
@@ -161,8 +161,8 @@ function evaluate_ERDGshade(NP, runs, maxevals, H, func_num)
         D = 905
     end
 
-    cec2013_init(func_num, "test/cec2013lsgo")
-    cec2013_set_data_dir("test/cec2013lsgo/cdatafiles")
+    cec2013_init(func_num, "../../test/cec2013lsgo")
+    cec2013_set_data_dir("../../test/cec2013lsgo/cdatafiles")
 
     fitness_fun = (f = x -> cec2013_eval_sol(x))
 
