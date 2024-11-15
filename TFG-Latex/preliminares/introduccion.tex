@@ -10,7 +10,110 @@
 
 \chapter{Introducción}
 
+\indent Cuando enfrentamos un problema de optimización que depende de pocos factores, es sencillo idear estrategias para resolverlo y encontrar una solución. Sin embargo, a medida que crece el número de variables, la complejidad del problema aumenta, y se hace inviable resolverlo mediante métodos tradicionales. Para abordar esta problemática, se han diseñado algoritmos específicos para manejar la alta dimensionalidad utilizando metaheurísticas. Estas buscan optimizar la exploración del espacio de búsqueda, logrando un equilibrio entre exploración y explotación, lo que permite realizar búsquedas efectivas en un espacio donde la porción representada por la población de búsqueda es ínfima comparada con el espacio total. No obstante, estos algoritmos presentan limitaciones, y cuando el número de variables es suficientemente alto, debemos explorar otras soluciones.
+
+En este trabajo, proponemos utilizar la técnica del \textbf{agrupamiento diferencial de variables}, que permite agrupar las variables en conjuntos, de forma que cada variable interactúa principalmente con las de su propio grupo y no (o mínimamente) con las de otros grupos. Así, podemos reducir la dimensión efectiva del problema, convirtiendo un problema de optimización de gran escala en problemas de optimización de menor tamaño. Nuestro objetivo es hibridar esta técnica con algoritmos diseñados para la alta dimensionalidad y con algoritmos que no están específicamente adaptados para ello. Compararemos el rendimiento aplicando y no aplicando esta técnica en ambos tipos de algoritmos.
+
+Para probar la efectividad de esta técnica, se han planteado los siguientes objetivos:
+
+\section*{Objetivos}
+
+\subsection*{Parte matemática}
+\begin{itemize}
+    \item \textbf{Análisis teórico}: Repaso de las técnicas matemáticas tradicionales en la literatura para resolver problemas de optimización sin restricciones.
+    \item \textbf{Estudio de teoremas}: Exposición y análisis de los teoremas en los que se basa el agrupamiento diferencial.
+    \item \textbf{Fundamentos estadísticos}: Explicación de los tests estadísticos utilizados para la comparación de algoritmos.
+\end{itemize}
+
+\subsection*{Parte informática}
+\begin{itemize}
+    \item \textbf{Desarrollo de una biblioteca de algoritmos}: Implementación de algoritmos para optimización continua sin restricciones en el lenguaje de programación Julia.
+    \item \textbf{Selección de algoritmos}: Descripción de los algoritmos que se incluirán en la biblioteca y que se emplearán en las comparaciones.
+    \item \textbf{Evaluación experimental}: Análisis de los algoritmos en el benchmark \textit{cec2013lsgo}, presentación de resultados y conclusiones obtenidas.
+\end{itemize}
+
+\section*{Estructura de la memoria}
+
+El trabajo se divide en tres partes claramente diferenciadas y cada parte está dividida en capítulos. Ademas de las dos partes que constituyen el contenido de este TFG, tenemos esta primera sección introductoria, donde se pone en contexto el trabajo, se definen los objetivos y se hace un repaso de la bibliografía necesaria. 
+Además, se hace una estimación del presupuesto y del tiempo dedicado a cada tarea.
+
+La parte Matemática está dividida en 3 capítulos, un primer capítulo donde se realizan definiciones importantes sobre optimización de funciones, se exponen algunos teoremas necesarios y se explican los métodos de búsqueda lineal y el algoritmo L-BFGS-B, que será un componente importante de nuestro algoritmo final. El segundo capítulo de esta sección se define el agrupamiento diferencial y se citan y demuestran los teoremas más importantes que justifican el diseño y utilidad de los algoritmos de agrupamiento automático de variables. Además se proporcionan algunas definiciones previas necesarias sobre separabilidad de funciones. Por último en la tercera sección de esta parte, se explican los fundamentos de los tests estadísticos y se definen los tests que suelen ser utilizados para comparar algoritmos. 
+
+En la parte informática, tenemos un capitulo inicial donde se definen los componentes de los algoritmos que formarán nuestra propuesta, una segunda parte donde se explican los algoritmos que luego hibridaremos con el agrupamiento de variables. En tercer lugar se explicará nuestra propuesta: combinar ERDG con SHADE y SHADEils. Por último, unas secciones finales donde se exponen los resultados obtenidos y las conclusiones que hemos obtenido de los resultados.
+
+\section*{Contexto Bibliográfico}
+
+En esta sección, haremos un repaso bibliográfico sobre la optimización global a gran escala (LSGO, por sus siglas en inglés, \textit{Large Scale Global Optimization}). Se proporcionará un contexto general de las distintas técnicas metaheurísticas y enfoques que existen para abordar este tipo de problemas, y se situarán nuestros algoritmos en este contexto, explicando en mayor profundidad aquellas técnicas que están más relacionadas con los algoritmos \textit{SHADE}, \textit{SHADEILS}, \textit{ERDG} y \textit{DG2}.
+
+\subsection*{Introducción a la Optimización Global a Gran Escala}
+
+La \textit{maldición de la dimensionalidad} ha sido un problema fundamental en la optimización global. Este problema se acentúa en la optimización global a gran escala, donde el número de variables y restricciones crece exponencialmente. El objetivo principal de las técnicas LSGO es mejorar la escalabilidad de los algoritmos de optimización a medida que el número de variables, \( n \), y su dimensionalidad crece.
+
+\subsection*{Enfoques Principales en LSGO}
+
+A continuación, se presentan los enfoques principales en LSGO, los cuales se han desarrollado para afrontar la complejidad de los problemas de optimización de gran escala:
+
+\begin{enumerate}
+    \item \textbf{Descomposición del problema}: Dividir el problema en subproblemas manejables.
+    \item \textbf{Hibridación y búsqueda local memética}: Combina algoritmos evolutivos con técnicas de búsqueda local.
+    \item \textbf{Operadores de muestreo y variación}: Técnicas de muestreo para explorar el espacio de búsqueda.
+    \item \textbf{Modelado por aproximación y uso de modelos sustitutos}: Se utilizan modelos simplificados para reducir el coste computacional.
+    \item \textbf{Métodos de inicialización}: Métodos para asegurar una cobertura uniforme del espacio de búsqueda.
+    \item \textbf{Paralelización}: Uso de múltiples instancias de algoritmos para acelerar la búsqueda.
+\end{enumerate}
+
+
+
+\subsection*{Operadores de Muestreo y Variación}
+
+Los operadores de muestreo y variación buscan mantener la diversidad en la población y mejorar la eficacia de los algoritmos en la exploración de grandes espacios de búsqueda. Dos enfoques comunes son:
+
+\subsubsection*{Evolución Diferencial (DE)}
+
+La Evolución Diferencial (DE) es un algoritmo popular en la optimización global debido a su simplicidad y efectividad. Variantes como \textit{SHADE} y \textit{SHADEILS} han surgido como adaptaciones de DE para problemas de gran escala:
+\begin{itemize}
+    \item \textbf{SHADE}: Una variante de DE que ajusta adaptativamente el tamaño de la población y los parámetros de mutación para mantener la diversidad en poblaciones grandes.
+    \item \textbf{SHADEILS}: Extiende SHADE mediante la integración de estrategias de búsqueda local, mejorando la precisión en problemas de alta dimensionalidad.
+\end{itemize}
+
+\subsubsection*{Particle Swarm Optimization (PSO)}
+
+PSO es un método basado en el comportamiento social de partículas. Aunque efectivo en problemas de baja dimensionalidad, enfrenta retos en alta dimensionalidad, para lo cual se han introducido estrategias de \textit{mantenimiento de diversidad} y \textit{re-inicialización}.
+
+\subsection*{Modelado por Aproximación y Modelos Sustitutos}
+
+Dado que resolver directamente un problema de gran escala puede ser costoso, el modelado por aproximación crea un modelo simplificado de la función objetivo. Este enfoque es particularmente útil cuando se dispone de una función de alto coste computacional.
+
+\subsection*{Métodos Explícitos para el Aprendizaje de Interacción de Variables}
+
+Los métodos explícitos para el aprendizaje de interacción buscan explotar las relaciones entre variables. Esto es fundamental en problemas donde la estructura del problema puede ser aprovechada.
+
+\subsubsection*{ERDG y DG2}
+
+\begin{itemize}
+    \item \textbf{ERDG (Recursive Differential Grouping)}: ERDG se basa en la identificación de interacciones mediante particionamiento iterativo de variables. Esta técnica permite detectar grupos de variables interdependientes, lo cual facilita la resolución de subproblemas de forma eficiente.
+    \item \textbf{DG2}: Es una técnica de descomposición que aprovecha las diferencias finitas para identificar interacciones. A diferencia de ERDG, DG2 ofrece una mayor precisión en la identificación de interacciones con una complejidad computacional más baja.
+\end{itemize}
+
+ERDG y DG2 son cruciales en el contexto de LSGO, ya que permiten dividir el problema en componentes independientes, lo cual facilita el proceso de optimización en problemas de gran escala.
+
+\subsection*{Ventajas y Desventajas de las Técnicas}
+
+Según el teorema \textit{No Free Lunch}, no existe un algoritmo universal que sea óptimo para todos los problemas. Por lo tanto, los enfoques híbridos que combinan varias estrategias tienden a ofrecer mejores resultados.
+
+\subsubsection*{Hibridación en Algoritmos Evolutivos}
+
+La hibridación en algoritmos evolutivos permite:
+\begin{enumerate}
+    \item Mejorar la velocidad de convergencia.
+    \item Incrementar la calidad de la solución.
+    \item Incorporar el algoritmo en sistemas más grandes.
+\end{enumerate}
+
+%
 De acuerdo con la comisión de grado, el TFG debe incluir una introducción en la que se describan claramente los objetivos previstos inicialmente en la propuesta de TFG, indicando si han sido o no alcanzados, los antecedentes importantes para el desarrollo, los resultados obtenidos, en su caso y las principales fuentes consultadas.
+%
+
 
 Ver archivo \texttt{preliminares/introduccion.tex}
 

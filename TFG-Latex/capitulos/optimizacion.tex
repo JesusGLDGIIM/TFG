@@ -24,6 +24,293 @@ D_{\mathbf{u}} f(\mathbf{x}) = \sum_{i=1}^{n} \frac{\partial f(\mathbf{x})}{\par
 
 \section{¿Evolución Diferencial?}
 
+\section{Introducción a la Optimización Numérica}
+
+La optimización numérica es una rama fundamental de las matemáticas aplicadas que se dedica al estudio y desarrollo de algoritmos para encontrar los valores óptimos (máximos o mínimos) de funciones, especialmente cuando estas son complejas y no pueden ser resueltas analíticamente \cite{nocedal2006numerical}. Los problemas de optimización aparecen en diversas áreas como la ingeniería, la economía, la física y la inteligencia artificial.
+
+\begin{definicion}
+\label{def:optimizacion}
+Un \textbf{problema de optimización} consiste en encontrar el vector $\mathbf{x}^* \in \mathbb{R}^n$ que minimiza (o maximiza) una función objetivo $f: \mathbb{R}^n \rightarrow \mathbb{R}$, es decir:
+\begin{equation}
+\mathbf{x}^* = \arg\min_{\mathbf{x} \in \mathbb{R}^n} f(\mathbf{x}).
+\end{equation}
+\end{definicion}
+
+Los problemas de optimización pueden clasificarse en:
+
+\begin{itemize}
+    \item \textbf{Optimización sin restricciones}: No existen limitaciones adicionales sobre las variables $\mathbf{x}$.
+    \item \textbf{Optimización con restricciones}: Las variables $\mathbf{x}$ deben satisfacer ciertas condiciones, como igualdad o desigualdad.
+\end{itemize}
+
+\subsection{Optimización Sin Restricciones}
+
+En la optimización sin restricciones, el objetivo es encontrar un punto donde la función objetivo alcanza su valor mínimo (o máximo) sin considerar limitaciones adicionales. Matemáticamente, esto implica resolver:
+\begin{equation}
+\min_{\mathbf{x} \in \mathbb{R}^n} f(\mathbf{x}).
+\end{equation}
+
+\subsection{Optimización Con Restricciones}
+
+En muchos problemas prácticos, las variables están sujetas a restricciones. Estas pueden ser:
+
+\begin{itemize}
+    \item \textbf{Restricciones de igualdad}: $h_i(\mathbf{x}) = 0$, $i = 1, \dots, m$.
+    \item \textbf{Restricciones de desigualdad}: $g_j(\mathbf{x}) \leq 0$, $j = 1, \dots, p$.
+\end{itemize}
+
+El problema de optimización con restricciones se formula entonces como:
+\begin{equation}
+\begin{aligned}
+& \min_{\mathbf{x} \in \mathbb{R}^n} & & f(\mathbf{x}) \\
+& \text{sujeto a} & & h_i(\mathbf{x}) = 0, \quad i = 1, \dots, m, \\
+& & & g_j(\mathbf{x}) \leq 0, \quad j = 1, \dots, p.
+\end{aligned}
+\end{equation}
+
+\section{Métodos de Búsqueda Lineal}
+
+Los métodos de búsqueda lineal son técnicas iterativas utilizadas para encontrar un mínimo local de una función a lo largo de una dirección específica. Estos métodos son esenciales en algoritmos de optimización más complejos y son utilizados para determinar el tamaño de paso en cada iteración \cite{wright1999numerical}.
+
+\subsection{Fundamentos Teóricos}
+
+La idea principal es seleccionar una dirección de búsqueda $\mathbf{d}_k$ en el punto actual $\mathbf{x}_k$ y encontrar un escalar $\alpha_k > 0$ tal que:
+\begin{equation}
+f(\mathbf{x}_k + \alpha_k \mathbf{d}_k) < f(\mathbf{x}_k).
+\end{equation}
+
+\begin{definicion}
+\label{def:busqueda_lineal}
+Un \textbf{método de búsqueda lineal} busca resolver el siguiente problema unidimensional:
+\begin{equation}
+\alpha_k = \arg\min_{\alpha > 0} \phi(\alpha) = f(\mathbf{x}_k + \alpha \mathbf{d}_k).
+\end{equation}
+\end{definicion}
+
+\subsection{Criterios de Armijo y Wolfe}
+
+Para garantizar la convergencia y evitar pasos demasiado largos o cortos, se emplean condiciones de aceptabilidad para el tamaño de paso $\alpha_k$ \cite{armijo1966minimization}.
+
+\begin{definicion}
+\label{def:armijo}
+La \textbf{condición de Armijo} establece que $\alpha_k$ debe satisfacer:
+\begin{equation}
+f(\mathbf{x}_k + \alpha_k \mathbf{d}_k) \leq f(\mathbf{x}_k) + c_1 \alpha_k \nabla f(\mathbf{x}_k)^\top \mathbf{d}_k,
+\end{equation}
+donde $0 < c_1 < 1$ es un parámetro pequeño, típicamente $c_1 = 10^{-4}$.
+\end{definicion}
+
+\begin{definicion}
+\label{def:wolfe}
+Las \textbf{condiciones de Wolfe} son dos y deben cumplirse simultáneamente:
+\begin{enumerate}
+    \item \textbf{Condición de Armijo} (como antes).
+    \item \textbf{Condición de curvatura}: 
+    \begin{equation}
+    \nabla f(\mathbf{x}_k + \alpha_k \mathbf{d}_k)^\top \mathbf{d}_k \geq c_2 \nabla f(\mathbf{x}_k)^\top \mathbf{d}_k,
+    \end{equation}
+    donde $c_1 < c_2 < 1$.
+\end{enumerate}
+\end{definicion}
+
+Estas condiciones garantizan que el tamaño de paso $\alpha_k$ no sea demasiado pequeño ni demasiado grande, promoviendo una convergencia eficiente.
+
+\section{Métodos de Newton y Quasi-Newton}
+
+Los métodos de Newton y quasi-Newton son algoritmos iterativos utilizados para encontrar los mínimos (o máximos) de funciones diferenciables. Se basan en aproximaciones de la función y su curvatura \cite{nocedal2006numerical}.
+
+\subsection{Método de Newton}
+
+El método de Newton utiliza información de segunda derivada (la matriz Hessiana) para encontrar la dirección de descenso óptima.
+
+\begin{definicion}
+\label{def:newton}
+En cada iteración $k$, el \textbf{método de Newton} actualiza la solución mediante:
+\begin{equation}
+\mathbf{x}_{k+1} = \mathbf{x}_k - [\nabla^2 f(\mathbf{x}_k)]^{-1} \nabla f(\mathbf{x}_k),
+\end{equation}
+donde $\nabla^2 f(\mathbf{x}_k)$ es la matriz Hessiana de $f$ en $\mathbf{x}_k$.
+\end{definicion}
+
+\subsubsection{Ventajas y Limitaciones}
+
+El método de Newton tiene una convergencia cuadrática cuando está cerca del mínimo, pero requiere calcular y almacenar la matriz Hessiana, lo cual es computacionalmente costoso para problemas de gran escala.
+
+\subsection{Métodos Quasi-Newton}
+
+Para superar las limitaciones del método de Newton, los métodos quasi-Newton construyen una aproximación de la matriz Hessiana utilizando información de las derivadas de primer orden.
+
+\begin{definicion}
+\label{def:quasi_newton}
+Los \textbf{métodos quasi-Newton} generan una secuencia de matrices $\mathbf{B}_k$ que aproximan la Hessiana, actualizando la solución como:
+\begin{equation}
+\mathbf{x}_{k+1} = \mathbf{x}_k - \mathbf{B}_k^{-1} \nabla f(\mathbf{x}_k).
+\end{equation}
+\end{definicion}
+
+\subsubsection{Actualizaciones de Broyden-Fletcher-Goldfarb-Shanno (BFGS)}
+
+Una de las fórmulas de actualización más utilizadas es la de BFGS \cite{wright1999numerical}.
+
+\begin{equation}
+\mathbf{B}_{k+1} = \mathbf{B}_k - \frac{\mathbf{B}_k \mathbf{s}_k \mathbf{s}_k^\top \mathbf{B}_k}{\mathbf{s}_k^\top \mathbf{B}_k \mathbf{s}_k} + \frac{\mathbf{y}_k \mathbf{y}_k^\top}{\mathbf{y}_k^\top \mathbf{s}_k},
+\end{equation}
+donde $\mathbf{s}_k = \mathbf{x}_{k+1} - \mathbf{x}_k$ y $\mathbf{y}_k = \nabla f(\mathbf{x}_{k+1}) - \nabla f(\mathbf{x}_k)$.
+
+\subsubsection{Ventajas y Limitaciones}
+
+Los métodos quasi-Newton tienen una convergencia superlineal y evitan el cálculo de la Hessiana exacta. Sin embargo, aún requieren almacenar matrices de tamaño $n \times n$, lo cual puede ser problemático para $n$ grande.
+
+\section{El Método L-BFGS-B}
+
+El método L-BFGS-B (\textit{Limited-memory Broyden-Fletcher-Goldfarb-Shanno with Bounds}) es una variante del algoritmo BFGS de memoria limitada que incorpora límites en las variables \cite{byrd1995limited}.
+
+\subsection{Descripción del Método}
+
+L-BFGS-B es un método de optimización quasi-Newton de memoria limitada que maneja restricciones de caja en las variables.
+
+\begin{definicion}
+\label{def:lbfgsb}
+El método L-BFGS-B resuelve problemas de la forma:
+\begin{equation}
+\min_{\mathbf{x} \in \mathbb{R}^n} f(\mathbf{x}) \quad \text{sujeto a} \quad l_i \leq x_i \leq u_i, \quad i = 1, \dots, n,
+\end{equation}
+donde $l_i$ y $u_i$ son los límites inferiores y superiores, respectivamente.
+\end{definicion}
+
+\subsection{Algoritmo y Funcionamiento}
+
+El método L-BFGS-B utiliza una aproximación de la matriz Hessiana basada en un número limitado de vectores $\mathbf{s}_k$ y $\mathbf{y}_k$, evitando el almacenamiento completo de matrices.
+
+\begin{algorithm}[H]
+\caption{Algoritmo L-BFGS-B}
+\begin{algorithmic}[1]
+\STATE Inicializar $\mathbf{x}_0$, límites $l_i$, $u_i$, memoria $m$
+\FOR{$k = 0, 1, 2, \dots$ hasta convergencia}
+    \STATE Calcular el gradiente $\nabla f(\mathbf{x}_k)$
+    \STATE Aplicar proyección para manejar las restricciones de caja
+    \STATE Calcular la dirección de búsqueda $\mathbf{d}_k$ usando la aproximación de la Hessiana
+    \STATE Realizar una búsqueda lineal para encontrar $\alpha_k$
+    \STATE Actualizar $\mathbf{x}_{k+1} = \mathbf{x}_k + \alpha_k \mathbf{d}_k$
+    \STATE Actualizar los vectores de memoria $\mathbf{s}_k$ y $\mathbf{y}_k$
+\ENDFOR
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Ventajas y Limitaciones}
+
+Las principales ventajas de L-BFGS-B incluyen:
+
+\begin{itemize}
+    \item \textbf{Eficiencia en problemas de gran escala}: Al utilizar memoria limitada, es adecuado para problemas con gran número de variables.
+    \item \textbf{Manejo de restricciones simples}: Las restricciones de caja son manejadas eficientemente mediante proyecciones.
+\end{itemize}
+
+Limitaciones:
+
+\begin{itemize}
+    \item \textbf{No adecuado para restricciones complejas}: El método está diseñado para restricciones de caja y puede no ser eficiente con restricciones más generales.
+    \item \textbf{Sensibilidad a la elección de parámetros}: La performance puede depender de la elección de parámetros como el tamaño de memoria $m$.
+\end{itemize}
+
+\begin{teorema}
+\label{teo:convergencia}
+Si la función objetivo $f$ es convexa y dos veces continuamente diferenciable, y si las matrices aproximadas $\mathbf{B}_k$ son positivas definidas, entonces el método L-BFGS-B converge globalmente al mínimo dentro de las restricciones dadas \cite{nocedal2006numerical}.
+\end{teorema}
+
+\section{Optimización Global a Gran Escala}
+
+La optimización global a gran escala se refiere a la resolución de problemas con un gran número de variables y múltiples óptimos locales. Estos problemas son comunes en áreas como el aprendizaje automático, donde los modelos pueden tener millones de parámetros \cite{floudas2000deterministic}.
+
+\subsection{Desafíos de la Optimización a Gran Escala}
+
+Los principales desafíos incluyen:
+
+\begin{itemize}
+    \item \textbf{Dimensionalidad alta}: El almacenamiento y el cálculo de matrices pueden ser computacionalmente costosos.
+    \item \textbf{Múltiples óptimos locales}: Es difícil garantizar que se alcance el óptimo global.
+    \item \textbf{Restricciones complejas}: Manejar restricciones en un espacio de alta dimensión puede ser complicado.
+\end{itemize}
+
+\subsection{Aplicaciones en Problemas de Gran Escala}
+
+El método L-BFGS-B es especialmente útil en problemas de gran escala debido a:
+
+\begin{itemize}
+    \item \textbf{Memoria limitada}: Utiliza una cantidad fija de memoria, independientemente del número de variables.
+    \item \textbf{Eficiencia computacional}: Reduce el costo computacional al evitar operaciones costosas.
+\end{itemize}
+
+\begin{definicion}
+\label{D3}
+Una función es \textbf{parcialmente aditivamente separable} si es de la siguiente forma:
+\begin{equation}
+f(\mathbf{x}) = \sum_{i=1}^{m} f_i(\mathbf{x}_i), \quad m > 1
+\label{EQ3}
+\end{equation}
+donde $f_i(\cdot)$ son subfunciones que solo dependen de las variables que forman cada vector $\mathbf{x}_i$.
+\end{definicion}
+
+\begin{teorema}
+\label{T1}
+Sea $f(\mathbf{x})$ una función (parcialmente) aditivamente separable. Para todo $a, b_1 \neq b_2, \delta \in \mathbb{R}, \delta \neq 0$, si se cumple la siguiente condición:
+\begin{equation}
+\Delta_{\delta,x_p}[f](\mathbf{x})|_{x_p=a, x_q=b_1} \neq \Delta_{\delta,x_p}[f](\mathbf{x})|_{x_p=a, x_q=b_2}
+\label{EQ6}
+\end{equation}
+entonces $x_p$ y $x_q$ son no separables, donde
+\begin{equation}
+\Delta_{\delta,x_p}[f](\mathbf{x}) = f(\ldots, x_p + \delta, \ldots) - f(\ldots, x_p, \ldots)
+\label{EQ7}
+\end{equation}
+se refiere a la diferencia hacia adelante de $f$ con respecto a la variable $x_p$ con intervalo $\delta$.
+\end{teorema}
+
+\subsection{Consideraciones Especiales}
+
+En problemas de gran escala, es crucial aprovechar la estructura de la función objetivo, como la separabilidad, para mejorar la eficiencia de los algoritmos \cite{bertsekas1997nonlinear}.
+
+\section{Conceptos Matemáticos Clave}
+
+Para comprender completamente los métodos de optimización discutidos, es importante familiarizarse con varios conceptos matemáticos.
+
+\subsection{Gradiente y Hessiana}
+
+\begin{definicion}
+El \textbf{gradiente} de una función $f: \mathbb{R}^n \rightarrow \mathbb{R}$ es el vector de derivadas parciales:
+\begin{equation}
+\nabla f(\mathbf{x}) = \left[ \frac{\partial f}{\partial x_1}, \dots, \frac{\partial f}{\partial x_n} \right]^\top.
+\end{equation}
+\end{definicion}
+
+\begin{definicion}
+La \textbf{matriz Hessiana} es la matriz de segundas derivadas parciales:
+\begin{equation}
+\nabla^2 f(\mathbf{x}) = \left[ \frac{\partial^2 f}{\partial x_i \partial x_j} \right]_{i,j=1}^n.
+\end{equation}
+\end{definicion}
+
+El gradiente indica la dirección de mayor incremento de la función, mientras que la Hessiana proporciona información sobre la curvatura de la función.
+
+\subsection{Funciones Convexas}
+
+\begin{definicion}
+Una función $f: \mathbb{R}^n \rightarrow \mathbb{R}$ es \textbf{convexa} si para todo $\mathbf{x}, \mathbf{y} \in \mathbb{R}^n$ y $\lambda \in [0,1]$ se cumple:
+\begin{equation}
+f(\lambda \mathbf{x} + (1 - \lambda) \mathbf{y}) \leq \lambda f(\mathbf{x}) + (1 - \lambda) f(\mathbf{y}).
+\end{equation}
+\end{definicion}
+
+La convexidad es una propiedad deseable en optimización, ya que garantiza que cualquier mínimo local es también mínimo global.
+
+\section{Conclusiones}
+
+La optimización numérica es un campo amplio y esencial en muchas áreas de la ciencia y la ingeniería. Los métodos de Newton y quasi-Newton proporcionan herramientas poderosas para encontrar óptimos locales de funciones diferenciables. El método L-BFGS-B, en particular, es altamente efectivo para problemas de gran escala con restricciones simples, gracias a su uso eficiente de la memoria y su capacidad para manejar límites en las variables.
+
+La comprensión de conceptos matemáticos como el gradiente, la Hessiana y la convexidad es fundamental para aplicar estos métodos correctamente. Además, aprovechar la estructura de la función objetivo, como la separabilidad, puede mejorar significativamente la eficiencia de los algoritmos de optimización.
+
+En resumen, los métodos y conceptos presentados son fundamentales para abordar problemas de optimización global a gran escala y continúan siendo un área activa de investigación y aplicación.
+
 \endinput
 %--------------------------------------------------------------------
 % FIN DEL CAPÍTULO. 

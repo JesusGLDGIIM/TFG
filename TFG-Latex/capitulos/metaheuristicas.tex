@@ -1,14 +1,11 @@
 % !TeX root = ../tfg.tex
 % !TeX encoding = utf8
 
-\chapter{Metaheurísticas}
+\chapter{Componentes de los algoritmos implementados}
 
-\section{Definición}
-Explicar las metaheurísticas en general, diferencias con las heurísticas y su clasificación. Clasificación general de las metaheuristicas para LSGO y centrarnos en algoritmos evolutivos, meméticos y evolución diferencial agrupamiento de variables
+En esta sección explicaremos con mayor profundidad la evolución diferencial, idea básica de los algoritmos que implementaremos más adelante, además explicaremos el funcionamiento de los algoritmos de agrupamiento diferencial y exploraremos dos métodos de búsqueda local que luego se utilizarán en el algoritmo SHADE-ILS
 
-\section{Algoritmos evolutivos}
-
-\subsection{Evolución diferencial}
+\section{Evolución diferencial}
 
 Esta sección describe brevemente la Evolución Diferencial (DE). Similar a otros algoritmos evolutivos para la optimización numérica, una población de DE se representa como un conjunto de vectores de parámetros reales \( \mathbf{x}_i = (x_{1}, \ldots, x_{D}), i = 1, \ldots, N \), donde \( D \) es la dimensionalidad del problema objetivo y \( N \) es el tamaño de la población. 
 
@@ -60,11 +57,9 @@ Después de que se han generado todos los vectores de prueba \( \mathbf{u}_{i,G}
 \end{cases} 
 \]
 
-\section{Algoritmos de descomposición}
-
 \section{Búsqueda local}
 
-
+\section{Algoritmos de descomposición}
 
 \endinput
 %--------------------------------------------------------------------
