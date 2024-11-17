@@ -41,13 +41,13 @@ La parte Matemática está dividida en 3 capítulos, un primer capítulo donde s
 
 En la parte informática, tenemos un capitulo inicial donde se definen los componentes de los algoritmos que formarán nuestra propuesta, una segunda parte donde se explican los algoritmos que luego hibridaremos con el agrupamiento de variables. En tercer lugar se explicará nuestra propuesta: combinar ERDG con SHADE y SHADEils. Por último, unas secciones finales donde se exponen los resultados obtenidos y las conclusiones que hemos obtenido de los resultados.
 
-\section*{Contexto Bibliográfico}
+\section*{Repaso Bibliográfico}
 
-En esta sección, haremos un repaso bibliográfico sobre la optimización global a gran escala (LSGO, por sus siglas en inglés, \textit{Large Scale Global Optimization}). Se proporcionará un contexto general de las distintas técnicas metaheurísticas y enfoques que existen para abordar este tipo de problemas, y se situarán nuestros algoritmos en este contexto, explicando en mayor profundidad aquellas técnicas que están más relacionadas con los algoritmos \textit{SHADE}, \textit{SHADEILS}, \textit{ERDG} y \textit{DG2}.
+En esta sección, haremos un repaso bibliográfico sobre la optimización global a gran escala (LSGO, por sus siglas en inglés, \textit{Large Scale Global Optimization}). Se proporcionará un contexto general de las distintas técnicas metaheurísticas y enfoques que existen para abordar este tipo de problemas, y se situarán nuestros algoritmos en este contexto, explicando en mayor profundidad aquellas técnicas que están más relacionadas con los algoritmos \textit{SHADE} \cite{TanabeShade}, \textit{SHADEils} \citep{Molina2018}, \textit{ERDG} \cite{ERDG} y \textit{DG2} \cite{DG2}. Para ello nos basaremos en el estudio realizado por \citeauthor{Review_I} en \cite{Review_I} y \cite{Review_II}.
 
 \subsection*{Introducción a la Optimización Global a Gran Escala}
 
-La \textit{maldición de la dimensionalidad} ha sido un problema fundamental en la optimización global. Este problema se acentúa en la optimización global a gran escala, donde el número de variables y restricciones crece exponencialmente. El objetivo principal de las técnicas LSGO es mejorar la escalabilidad de los algoritmos de optimización a medida que el número de variables, \( n \), y su dimensionalidad crece.
+La \textit{maldición de la dimensionalidad} \cite{bellman_adaptive_1961} ha sido un problema fundamental en la optimización global. Este problema se acentúa en la optimización global a gran escala, donde el número de variables y restricciones crece exponencialmente. El objetivo principal de las técnicas LSGO es mejorar la escalabilidad de los algoritmos de optimización a medida que el número de variables, \( n \), y su dimensionalidad crece.
 
 \subsection*{Enfoques Principales en LSGO}
 
@@ -62,59 +62,171 @@ A continuación, se presentan los enfoques principales en LSGO, los cuales se ha
     \item \textbf{Paralelización}: Uso de múltiples instancias de algoritmos para acelerar la búsqueda.
 \end{enumerate}
 
+\subsection*{Explotación de la Estructura del Problema (evitando la caja negra)}
+
+Explotar la estructura del problema es común en diversas áreas de la optimización. La optimización de tipo \textit{gray-box} es un concepto relativamente nuevo que se centra en incorporar la estructura del problema en el proceso de optimización. Este enfoque busca descubrir y explorar un “orden oculto”, un concepto ampliamente estudiado en computación evolutiva en el contexto del aprendizaje de dependencias (\textit{linkage learning}). Las dependencias entre variables son cruciales para el rendimiento de los algoritmos genéticos (GAs). Sin conocer estas dependencias, incluso problemas separables pueden ser exponencialmente difíciles para GAs simples, y su resolución puede requerir tamaños de población exponencialmente grandes para encontrar el óptimo global.
+
+En la optimización \textit{gray-box}, se asume que la estructura del problema es conocida \textit{a priori}, como ocurre en problemas discretos y combinatorios.
+
+Sin embargo, en problemas continuos, la estructura puede no ser evidente, por lo que primero debe ser descubierta. Se han propuesto diversos algoritmos para analizar la interacción entre variables y capturar la topología del problema, lo cual no solo convierte problemas de tipo \textit{black-box} en \textit{gray-box}, sino que también permite revelar información no trivial, incluso en problemas completamente conocidos (\textit{white-box}).
+
+La información estructural puede emplearse de diferentes formas para mejorar el rendimiento en la optimización. Algunos métodos, como la \textit{cooperative co-evolution} (CC) \cite{CC}, descomponen el problema en subproblemas de menor dimensionalidad, requiriendo un análisis de interacción de variables para lograr una descomposición adecuada. Otros métodos, como los algoritmos evolutivos basados en distribuciones (\textit{EDAs}) y los algoritmos de optimización bayesiana (\textit{BOAs}), no descomponen el problema explícitamente, pero capturan y aprovechan la información de interacción mediante modelos probabilísticos construidos durante el proceso de optimización.
 
 
-\subsection*{Operadores de Muestreo y Variación}
+Para descubrir la estructura interna del problema, existen dos aproximaciones, los métodos implícitos y los métodos explícitos. A continuación se presenta una clasificación de ambos métodos:
+
+\begin{table}[H]
+\renewcommand{\arraystretch}{1.5} % Ajusta la altura de las filas
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|l|p{12cm}|}
+\hline
+\textbf{Método} & \textbf{Descripción} \\ \hline
+
+\textbf{Adaptación de Interacciones} & Métodos que extienden algoritmos genéticos (GAs) simples agregando mecanismos para mejorar la representación del problema y promover una vinculación estrecha (\textit{tight linkage}). \\ \hline
+
+\textbf{Modelos Probabilísticos} & Métodos que utilizan distribuciones de probabilidad para representar la función objetivo o características del problema. \\ \hline
+\multicolumn{2}{|l|}{\textbf{Submétodos:}} \\ \hline
+
+- \textit{Construcción de un modelo de interacción de variables} & Los \textit{EDAs} y \textit{BOAs} modelan las interacciones entre variables mediante redes bayesianas o matrices de covarianza adaptativas. Este enfoque captura patrones complejos en el problema. \\ \hline
+
+- \textit{Construcción de un modelo de la función objetivo} & La optimización bayesiana construye un modelo probabilístico de la función objetivo basado en distribuciones previas y posteriores, que se actualizan con nuevas evaluaciones. \\ \hline
+
+- \textit{Construcción de un modelo del movimiento poblacional} & Estrategias como \textit{CMA-ES} modelan el movimiento poblacional utilizando distribuciones gaussianas multivariantes, ajustando la matriz de covarianza para reflejar el paisaje del problema. \\ \hline
+
+\textbf{Reducción Dimensional y Partición del Espacio} & Técnicas que reducen la dimensionalidad o dividen el espacio en subespacios más pequeños para simplificar la complejidad computacional en problemas de gran escala. Ejemplos incluyen proyecciones aleatorias y análisis de componentes principales (PCA). \\ \hline
+
+\textbf{Distribuciones de Cola Pesada} & Uso de distribuciones como Lévy, Cauchy o t-distributions para mejorar la exploración y la diversidad poblacional. Estas distribuciones son útiles para evitar el estancamiento en óptimos locales. \\ \hline
+
+\end{tabular}%
+}
+\caption{Resumen de métodos implícitos para la explotación de la estructura del problema en optimización.}
+\label{tab:implicit_methods}
+\end{table}
+
+\begin{table}[H]
+\renewcommand{\arraystretch}{1.5} % Ajusta la altura de las filas
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|l|p{12cm}|}
+\hline
+\textbf{Método} & \textbf{Descripción} \\ \hline
+
+\textbf{Descomposición en Coevolución Cooperativa (CC)} & Divide el problema en subproblemas de menor dimensionalidad, optimizando cada uno por separado en un esquema de coevolución. \\ \hline
+\multicolumn{2}{|l|}{\textbf{Submétodos:}} \\ \hline
+- \textit{CCGA (Cooperative Coevolution Genetic Algorithm)} & Divide un problema de $n$ dimensiones en $n$ subproblemas unidimensionales. Útil para problemas de baja interacción entre variables. \\ \hline
+- \textit{Divide-in-half} & Divide el problema en dos subcomponentes de igual tamaño, optimizados iterativamente con estrategias como DE (\textit{Differential Evolution}). \\ \hline
+
+\textbf{Gestión de Interacciones entre Variables} & Métodos que identifican relaciones entre variables para minimizar interacciones entre componentes. \\ \hline
+\multicolumn{2}{|l|}{\textbf{Submétodos:}} \\ \hline
+- \textit{Agrupamiento Aleatorio (Random Grouping)} & Reorganiza aleatoriamente variables después de cada ciclo evolutivo para aumentar la probabilidad de agrupar variables relacionadas. \\ \hline
+- \textit{Agrupamiento Delta (Delta Grouping)} & Ordena variables según sus desplazamientos medios entre iteraciones, agrupándolas por magnitud similar. \\ \hline
+- \textit{Minimización de Diferencias de Fitness (DI)} & Reorganiza variables para minimizar diferencias en las interacciones detectadas, optimizando componentes uniformes. \\ \hline
+
+\textbf{Métodos Estadísticos} & Inferencia de interacciones utilizando análisis estadístico de la población en evolución. \\ \hline
+
+\textbf{Métodos Basados en Diferencias Finitas} & Utilizan diferencias finitas para detectar interacciones entre pares de variables. \\ \hline
+\multicolumn{2}{|l|}{\textbf{Submétodos:}} \\ \hline
+- \textit{DG (Differential Grouping)} & Forma componentes no separables mediante un análisis iterativo de interacciones con menor coste computacional. \\ \hline
+
+\textbf{Agrupamiento Automático y Semiautomático} & Algoritmos que forman grupos de forma automática o requieren que el usuario especifique el número/tamaño de los componentes. \\ \hline
+\multicolumn{2}{|l|}{\textbf{Submétodos:}} \\ \hline
+- \textit{Automático} & Métodos como \textit{DG2} usan matrices de interacción y algoritmos de componentes conectados para agrupar. \\ \hline
+- \textit{Semiautomático} & Requieren información adicional, como el número o tamaño de componentes, para formar grupos. \\ \hline
+- \textit{k-s Dimensional Components} & Métodos que requieren que el usuario especifique tanto el número como el tamaño de los componentes para formar los grupos. \\ \hline
+\end{tabular}%
+}
+\caption{Resumen de métodos explícitos para la explotación de la estructura del problema en optimización.}
+\label{tab:explicit_methods}
+\end{table}
+
+Tras haber establecido una clasificación, podemos observar que DG2 y ERDG pertenecen a la categoría de algoritmos explícitos, basados en diferencias finitas y automáticos.
+
+\subsection*{Hibridación y Algoritmos Meméticos}
+
+El teorema de No Free Lunch \cite{no_free_lunch} indica que ningún algoritmo de búsqueda puede superar consistentemente a todos los demás en todos los problemas posibles. La \textbf{hibridación} busca combinar las fortalezas de diferentes algoritmos para mejorar su rendimiento, la calidad de las soluciones y su integración en sistemas más amplios.
+
+\begin{itemize}
+\item{Algoritmos de Búsqueda Local Híbrida}
+Estos algoritmos se basan únicamente en búsqueda local sin un componente global explícito. Por ejemplo, el \textit{Multiple Trajectory Search} (MTS) emplea tres métodos de búsqueda local, seleccionando el mejor para optimizar en vecindades específicas. Este enfoque ha demostrado eficacia en problemas de hasta 1000 dimensiones.
+
+\item{Algoritmos Meméticos}
+Integran búsqueda local dentro de un marco evolutivo global, balanceando exploración y explotación. Son populares en la optimización de gran escala, destacándose en competiciones de LSGO. Un ejemplo es el algoritmo SHADEils, que utilizaremos en nuestra propuesta. Los principales aspectos de diseño incluyen:
+\begin{itemize}
+    \item \textbf{Frecuencia de búsqueda local:} Puede ser fija, adaptativa o probabilística.
+    \item \textbf{Selección de soluciones:} Basada en rendimiento, aleatoriedad o todas las soluciones.
+    \item \textbf{Intensidad de búsqueda:} Determina la duración de la búsqueda local, con enfoques fijos o adaptativos.
+    \item \textbf{Procedimientos de búsqueda local:} Amplia variedad, incluyendo métodos como MTS-LS, L-BFGS-B.
+\end{itemize}
+
+\item{Hibridación Coevolutiva}
+Combina la descomposición de problemas con algoritmos meméticos. Los problemas se dividen en subproblemas optimizados con algoritmos globales seguidos de episodios de búsqueda local. 
+\end{itemize}
+
+\subsection*{Operadores de Muestreo y Variación en DE y PSO}
 
 Los operadores de muestreo y variación buscan mantener la diversidad en la población y mejorar la eficacia de los algoritmos en la exploración de grandes espacios de búsqueda. Dos enfoques comunes son:
 
-\subsubsection*{Evolución Diferencial (DE)}
+\begin{itemize}
 
-La Evolución Diferencial (DE) es un algoritmo popular en la optimización global debido a su simplicidad y efectividad. Variantes como \textit{SHADE} y \textit{SHADEILS} han surgido como adaptaciones de DE para problemas de gran escala:
+\item{Evolución Diferencial (DE)}
+
+La Evolución Diferencial (DE) \cite{DE} es un algoritmo popular en la optimización global debido a su simplicidad y efectividad. Variantes como \textit{SHADE} y \textit{SHADEils} han surgido como adaptaciones de DE para problemas de gran escala:
 \begin{itemize}
     \item \textbf{SHADE}: Una variante de DE que ajusta adaptativamente el tamaño de la población y los parámetros de mutación para mantener la diversidad en poblaciones grandes.
-    \item \textbf{SHADEILS}: Extiende SHADE mediante la integración de estrategias de búsqueda local, mejorando la precisión en problemas de alta dimensionalidad.
+    \item \textbf{SHADEils}: Extiende SHADE mediante la integración de estrategias de búsqueda local, mejorando la precisión en problemas de alta dimensionalidad.
 \end{itemize}
 
-\subsubsection*{Particle Swarm Optimization (PSO)}
+\item{Particle Swarm Optimization (PSO)}
 
-PSO es un método basado en el comportamiento social de partículas. Aunque efectivo en problemas de baja dimensionalidad, enfrenta retos en alta dimensionalidad, para lo cual se han introducido estrategias de \textit{mantenimiento de diversidad} y \textit{re-inicialización}.
+PSO \cite{PSO} es un método basado en el comportamiento social de partículas. Aunque efectivo en problemas de baja dimensionalidad, enfrenta retos en alta dimensionalidad, para lo cual se han introducido estrategias de \textit{mantenimiento de diversidad} y \textit{re-inicialización}.
 
-\subsection*{Modelado por Aproximación y Modelos Sustitutos}
-
-Dado que resolver directamente un problema de gran escala puede ser costoso, el modelado por aproximación crea un modelo simplificado de la función objetivo. Este enfoque es particularmente útil cuando se dispone de una función de alto coste computacional.
-
-\subsection*{Métodos Explícitos para el Aprendizaje de Interacción de Variables}
-
-Los métodos explícitos para el aprendizaje de interacción buscan explotar las relaciones entre variables. Esto es fundamental en problemas donde la estructura del problema puede ser aprovechada.
-
-\subsubsection*{ERDG y DG2}
-
-\begin{itemize}
-    \item \textbf{ERDG (Recursive Differential Grouping)}: ERDG se basa en la identificación de interacciones mediante particionamiento iterativo de variables. Esta técnica permite detectar grupos de variables interdependientes, lo cual facilita la resolución de subproblemas de forma eficiente.
-    \item \textbf{DG2}: Es una técnica de descomposición que aprovecha las diferencias finitas para identificar interacciones. A diferencia de ERDG, DG2 ofrece una mayor precisión en la identificación de interacciones con una complejidad computacional más baja.
 \end{itemize}
 
-ERDG y DG2 son cruciales en el contexto de LSGO, ya que permiten dividir el problema en componentes independientes, lo cual facilita el proceso de optimización en problemas de gran escala.
+\begin{table}[H]
+\renewcommand{\arraystretch}{1.5} % Ajusta la altura de las filas
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|l|p{12cm}|}
+\hline
+\textbf{Método} & \textbf{Descripción} \\ \hline
 
-\subsection*{Ventajas y Desventajas de las Técnicas}
+\textbf{Estrategias de mutación en DE} & Variaciones de la estrategia de mutación para mejorar la convergencia y diversidad en problemas de gran escala. \\ \hline
+\multicolumn{2}{|l|}{\textbf{Submétodos:}} \\ \hline
+- \textit{Adaptación de estrategias de mutación} & Aplicación adaptativa de estrategias según el tipo de problema, como DE/rand/1 o DE/current-to-best/1. \\ \hline
+- \textit{Selección de vectores} & Uso de vectores basados en calidad o cercanía, como la combinación de global-best y personal-best. \\ \hline
 
-Según el teorema \textit{No Free Lunch}, no existe un algoritmo universal que sea óptimo para todos los problemas. Por lo tanto, los enfoques híbridos que combinan varias estrategias tienden a ofrecer mejores resultados.
+\textbf{Adaptación de parámetros en DE} & Ajuste dinámico de parámetros como el factor de escala ($F$) y la tasa de cruce ($CR$) para mejorar la exploración y explotación. \\ \hline
+\multicolumn{2}{|l|}{\textbf{Submétodos:}} \\ \hline
+- \textit{Muestreo probabilístico} & Uso de distribuciones (uniforme, gaussiana, Cauchy) para generar parámetros adaptativos. \\ \hline
+- \textit{Procesos caóticos} & Ajuste de $F$ y $CR$ mediante procesos caóticos para mejorar la búsqueda en espacios complejos. \\ \hline
 
-\subsubsection*{Hibridación en Algoritmos Evolutivos}
+\textbf{Mantenimiento de diversidad en DE} & Prevención de pérdida de diversidad en alta dimensionalidad mediante partición del espacio, coevolución o uso de archivos de soluciones. \\ \hline
+\multicolumn{2}{|l|}{\textbf{Submétodos:}} \\ \hline
+- \textit{Multipoblación} & Subpoblaciones con estrategias independientes para promover exploración y explotación. \\ \hline
+- \textit{Archivos externos} & Almacenamiento de soluciones descartadas o fallidas para diversificar el cruce y la mutación. \\ \hline
 
-La hibridación en algoritmos evolutivos permite:
-\begin{enumerate}
-    \item Mejorar la velocidad de convergencia.
-    \item Incrementar la calidad de la solución.
-    \item Incorporar el algoritmo en sistemas más grandes.
-\end{enumerate}
+\textbf{Actualización de PSO} & Modificación de reglas de actualización para evitar convergencia prematura y mejorar la exploración en alta dimensionalidad. \\ \hline
+\multicolumn{2}{|l|}{\textbf{Submétodos:}} \\ \hline
+- \textit{Reglas de actualización alternativas} & Reducción de la dependencia en global-best mediante aprendizajes sociales o mutaciones distribuidas. \\ \hline
+- \textit{Topologías dinámicas} & Uso de vecindarios dinámicos o estructuras de multipoblación para mejorar la diversidad. \\ \hline
 
-%
-De acuerdo con la comisión de grado, el TFG debe incluir una introducción en la que se describan claramente los objetivos previstos inicialmente en la propuesta de TFG, indicando si han sido o no alcanzados, los antecedentes importantes para el desarrollo, los resultados obtenidos, en su caso y las principales fuentes consultadas.
-%
+\textbf{Mantenimiento de diversidad en PSO} & Mecanismos para equilibrar la exploración y explotación en grandes dimensiones. \\ \hline
+\multicolumn{2}{|l|}{\textbf{Submétodos:}} \\ \hline
+- \textit{Reinicialización parcial} & Reubicación de partículas en áreas de alta actividad para concentrar la búsqueda. \\ \hline
+- \textit{Muestreo basado en oposición} & Exploración en espacios opuestos para aumentar las probabilidades de mejora. \\ \hline
 
+\textbf{Partición del espacio en PSO} & División del espacio de búsqueda en subregiones optimizadas por separado para mejorar el enfoque y evitar estancamientos. \\ \hline
+\multicolumn{2}{|l|}{\textbf{Submétodos:}} \\ \hline
+- \textit{Agrupamiento de dimensiones} & Actualización segmentada de dimensiones para evitar convergencia prematura. \\ \hline
+- \textit{Subenjambres} & Subenjambres independientes que comparten información de forma controlada para mantener la diversidad. \\ \hline
 
-Ver archivo \texttt{preliminares/introduccion.tex}
+\end{tabular}%
+}
+\caption{Resumen de operadores de muestreo y variación en DE y PSO para optimización global a gran escala.}
+\label{tab:sampling_variation}
+\end{table}
+
+Una vez terminada una exposición de donde se sitúan los algoritmos que vamos a utilizar, discutiremos sus propiedades teóricas y realizaremos un estudio comparativo para comprobar si el agrupamiento diferencial de variables es efectivo en todos los casos. Llegaremos a la conclusión de que no se puede aplicar directamente la descomposición de variables con cualquier algoritmo. Los resultados de SHADEils, demuestran que en algoritmos pensados para al alta dimensionalidad, aplicar descomposición no necesariamente mejora los resultados obtenidos, y es necesario realizar mejoras en este algoritmo si se quiere utilizar con problemas descompuestos. Esto último, se deja como trabajo futuro.
 
 \endinput

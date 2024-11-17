@@ -184,6 +184,50 @@ function evaluate_ERDGshade(NP, runs, maxevals, H, func_num)
     end
 end
 
+function compare_grouping(func_num)
+    # Definir límites y dimensiones según func_num
+    lb, ub = get_bounds(func_num)
+    D = 1000  # Dimensión del problema
+
+    if func_num == 13
+        D = 905
+    end
+
+    # Inicializar la función de prueba CEC2013
+    cec2013_init(func_num, "../../test/cec2013lsgo")
+    cec2013_set_data_dir("../../test/cec2013lsgo/cdatafiles")
+
+    # Definir la función de fitness
+    fitness_fun = x -> cec2013_eval_sol(x)
+
+    # Crear límites de búsqueda en forma de vectores
+    lbv = lb * ones(D)
+    ubv = ub * ones(D)
+
+    # Ejecutar ERDG y DG2
+    erdg_groups, erdg_evals = ERDG(fitness_fun, D, lbv, ubv)
+    dg2_groups, dg2_evals = DG2(fitness_fun, D, lbv, ubv)
+
+    # Mostrar evaluaciones de función
+    println("Evaluaciones ERDG: ", erdg_evals)
+    println("Evaluaciones DG2: ", dg2_evals)
+
+    # Comparar los grupos obtenidos, independientemente del orden
+    function compare_groups(groups1, groups2)
+        sets1 = [Set(g) for g in groups1]
+        sets2 = [Set(g) for g in groups2]
+        return all(s1 in sets2 for s1 in sets1) && all(s2 in sets1 for s2 in sets2)
+    end
+
+    if compare_groups(erdg_groups, dg2_groups)
+        println("Son iguales")
+    else
+        println("Grupos ERDG: ", erdg_groups)
+        println("Grupos DG2: ", dg2_groups)
+    end
+end
+
+
 # Lee argumentos de la línea de comandos
 function main()
     if length(ARGS) < 3
@@ -205,6 +249,8 @@ function main()
         results = evaluate_ERDGshade(NP, runs, maxevals, H, func_num)
     elseif algorithm == "ERDGshadeils"
         results = evaluate_ERDGshadeils(NP, runs, evals, func_num)
+    elseif algorithm == "Grouping"
+        compare_grouping(func_num)
     else
         println("Algoritmo no reconocido. Use 'shadeils', 'shade', 'ERDGshade' o 'ERDGshadeils'.")
     end

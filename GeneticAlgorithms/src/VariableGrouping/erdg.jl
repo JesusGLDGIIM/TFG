@@ -1,4 +1,4 @@
-module VariableGrouping
+
     export ERDG
 
     # ERDG algorithm implementation in Julia
@@ -115,9 +115,11 @@ module VariableGrouping
         end
         return sub1, FEs, y001
     end
-end
+
 
 #=
+using .VariableGrouping
+
 # Función objetivo de prueba
 function test_fun(x)
     # Ejemplo de una función simple: suma de cuadrados
@@ -125,7 +127,7 @@ function test_fun(x)
 end
 
 # Probando el algoritmo ERDG
-dim = 10
+dim = 100
 lb = -5.0 * ones(dim)
 ub = 5.0 * ones(dim)
 

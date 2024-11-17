@@ -12,9 +12,9 @@ module GeneticAlgorithms
     include("DifferentialEvolution/shade.jl")
 
     # Variable Grouping Algorithms
-    include("VariableGrouping/dg2.jl")
-    include("VariableGrouping/erdg.jl")
-
+    # include("VariableGrouping/dg2.jl")
+    # include("VariableGrouping/erdg.jl")
+    include("VariableGrouping/VariableGrouping.jl")
     # Hybrid Algorithms
     include("Memetic/memetic.jl")
     # include("Memetic/dg2_shade_ils.jl")
