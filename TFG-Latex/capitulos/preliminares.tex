@@ -1,0 +1,93 @@
+% !TeX root = ../tfg.tex
+% !TeX encoding = utf8
+
+\chapter{Preliminares}
+
+En esta sección se definen algunos conceptos matemáticos básicos, que se espera que se conozcan y no serán el objetivo de estudio de este trabajo, pero que son necesarios y se utilizarán durante el desarrollo de este trabajo.
+
+\section{Conceptos matemáticos fundamentales}
+
+\begin{definicion}[Derivada]
+\label{def:derivada}
+La derivada de una función $f: \mathbb{R} \to \mathbb{R}$ en un punto $x_0 \in \mathbb{R}$ se define como el límite, si existe:
+\[
+f'(x_0) = \lim_{h \to 0} \frac{f(x_0 + h) - f(x_0)}{h}.
+\]
+Este valor representa la pendiente de la recta tangente a la gráfica de $f$ en el punto $x_0$.
+\end{definicion}
+
+\begin{definicion}[Derivada direccional]
+\label{def:derivada_direccional}
+Sea $f : \mathbb{R}^n \to \bar{\mathbb{R}}$ una función diferenciable, y $\mathbf{u} = (u_1, \dots, u_n)$ un vector de $\mathcal{U}$. La derivada direccional de $f$ en la dirección $\mathbf{u}$, denotada como $D_{\mathbf{u}} f(x)$, está dada por:
+
+\[
+D_{\mathbf{u}} f(x) = \sum_{i=1}^n \frac{\partial f(x)}{\partial x_i} u_i.
+\]
+\end{definicion}
+
+\begin{definicion}[Derivada parcial]
+\label{def:derivada_parcial}
+Sea $f : \mathbb{R}^n \to \mathbb{R}$ una función. La derivada parcial de $f$ con respecto a la variable $x_i$, evaluada en un punto $\mathbf{x}_0 = (x_1, \dots, x_n)$, está dada por:
+
+\[
+\frac{\partial f}{\partial x_i}(\mathbf{x}_0) = \lim_{h \to 0} \frac{f(x_1, \dots, x_i + h, \dots, x_n) - f(x_1, \dots, x_i, \dots, x_n)}{h}.
+\]
+
+Esto mide cómo cambia $f$ al variar únicamente $x_i$, manteniendo las demás variables constantes. Es un caso particular de la derivada direccional, en la que el vector $\mathbf{u}$ es un vector de la base usual.
+\end{definicion}
+
+\begin{definicion}[Gradiente]
+\label{def:gradiente}
+El gradiente de una función $f: \mathbb{R}^n \to \mathbb{R}$, denotado como $\nabla f$, es el vector cuyas componentes son las derivadas parciales de $f$ con respecto a cada variable:
+\[
+\nabla f(\mathbf{x}) = \begin{bmatrix}
+\frac{\partial f}{\partial x_1}(\mathbf{x}) \\
+\vdots \\
+\frac{\partial f}{\partial x_n}(\mathbf{x})
+\end{bmatrix}.
+\]
+El gradiente apunta en la dirección de mayor crecimiento de $f$.
+\end{definicion}
+
+\begin{definicion}[Hessiano]
+\label{def:hessiano}
+La matriz hessiana de una función $f: \mathbb{R}^n \to \mathbb{R}$, denotada como $\nabla^2 f$, es la matriz cuadrada de segundo orden cuyas entradas son las derivadas parciales segundas de $f$:
+\[
+\nabla^2 f(\mathbf{x}) = \begin{bmatrix}
+\frac{\partial^2 f}{\partial x_1^2} & \frac{\partial^2 f}{\partial x_1 \partial x_2} & \cdots & \frac{\partial^2 f}{\partial x_1 \partial x_n} \\
+\frac{\partial^2 f}{\partial x_2 \partial x_1} & \frac{\partial^2 f}{\partial x_2^2} & \cdots & \frac{\partial^2 f}{\partial x_2 \partial x_n} \\
+\vdots & \vdots & \ddots & \vdots \\
+\frac{\partial^2 f}{\partial x_n \partial x_1} & \frac{\partial^2 f}{\partial x_n \partial x_2} & \cdots & \frac{\partial^2 f}{\partial x_n^2}
+\end{bmatrix}.
+\]
+La hessiana es simétrica si $f$ es dos veces continuamente diferenciable.
+\end{definicion}
+
+\begin{teorema}[Teorema de Taylor]
+\label{teo:taylor}
+Sea $f: \mathbb{R}^n \rightarrow \mathbb{R}$ una función continuamente diferenciable en un entorno abierto de $\mathbf{x}$. Entonces, para cualquier $\mathbf{p} \in \mathbb{R}^n$, existe $\theta \in (0,1)$ tal que
+\begin{equation}
+f(\mathbf{x} + \mathbf{p}) = f(\mathbf{x}) + \nabla f(\mathbf{x} + \theta \mathbf{p})^\top \mathbf{p}.
+\end{equation}
+Si además $f$ es dos veces continuamente diferenciable, entonces
+\begin{equation}
+f(\mathbf{x} + \mathbf{p}) = f(\mathbf{x}) + \nabla f(\mathbf{x})^\top \mathbf{p} + \frac{1}{2} \mathbf{p}^\top \nabla^2 f(\mathbf{x} + \theta \mathbf{p}) \mathbf{p}.
+\end{equation}
+\end{teorema}
+
+\begin{teorema}[Teorema de Weierstrass]
+\label{Weierstrass}
+Sea $f: K \to \mathbb{R}$ una función continua definida sobre un conjunto $K \subseteq \mathbb{R}^n$ no vacío, cerrado y acotado. Entonces, $f$ alcanza su máximo y su mínimo en $K$, es decir, existen puntos $\mathbf{x}_\text{max}, \mathbf{x}_\text{min} \in K$ tales que:
+\[
+f(\mathbf{x}_\text{min}) \leq f(\mathbf{x}) \leq f(\mathbf{x}_\text{max}), \quad \forall \mathbf{x} \in K.
+\]
+\end{teorema}
+
+\begin{definicion}[Integral de línea]
+\label{def:integral_linea}
+Sea $\mathbf{r}(t) = (x(t), y(t), z(t))$, $t \in [a, b]$, una curva diferenciable en $\mathbb{R}^3$, y sea $f: \mathbb{R}^3 \to \mathbb{R}$. La integral de línea de $f$ a lo largo de $\mathbf{r}$ se define como:
+\[
+\int_C f \, ds = \int_a^b f(\mathbf{r}(t)) \|\mathbf{r}'(t)\| \, dt,
+\]
+donde $\|\mathbf{r}'(t)\|$ es la norma de la derivada de $\mathbf{r}$, y $ds$ representa un elemento diferencial de longitud de arco.
+\end{definicion}

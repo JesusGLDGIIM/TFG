@@ -41,7 +41,7 @@
   %\medskip
   %Nombre del tutor 2 \\ \emph{Departamento del tutor 2}
 }
-\newcommand{\miCurso}{2023-2024\xspace}
+\newcommand{\miCurso}{2024-2025\xspace}
 
 \hypersetup{
 	pdftitle={\miTitulo},
@@ -73,7 +73,7 @@
 \mainmatter % activa la numeración de capítulos, resetea la numeración de las páginas y usa números arábigos
 
 \part{Parte Matemática} % Dividir un TFG en partes OPCIONAL
-
+\input{capitulos/preliminares}
 \input{capitulos/optimizacion}
 \input{capitulos/grouping}
 %\input{capitulos/lsgo}
@@ -86,6 +86,7 @@
 % Añadir tantos capítulos como sea necesario
 
 \cleardoublepage\part{Parte Informática}
+
 
 \input{capitulos/metaheuristicas}
 \input{capitulos/algoritmos}
@@ -102,14 +103,14 @@
 \appendix % Reinicia la numeración de los capítulos y usa letras para numerarlos
 \pdfbookmark[-1]{Apéndices}{appendix} % Alternativamente podemos agrupar los apéndices con un nuevo \part{Apéndices}
 
-\input{apendices/apendice-ejemplo}
+%\input{apendices/apendice-ejemplo}
 % Añadir tantos apéndices como sea necesario 
 
 % -------------------------------------------------------------------
 % GLOSARIO: Opcional
 % -------------------------------------------------------------------
 
-\input{glosario} 
+%\input{glosario} 
 
 % -------------------------------------------------------------------
 % BACKMATTER

@@ -3,14 +3,310 @@
 
 \chapter{Tests estadísticos}
 
-\section{Definición}
+En el campo de la optimización, y en particular en el de los algoritmos genéticos y otros métodos estocásticos, la comparación de algoritmos es una tarea fundamental para determinar qué enfoque es más efectivo bajo ciertas condiciones. Sin embargo, realizar comparaciones significativas no es una tarea trivial, ya que los resultados de los algoritmos suelen estar sujetos a variabilidad, tanto por la naturaleza estocástica de muchos métodos como por las características particulares de los problemas analizados. Para abordar este desafío, es indispensable contar con herramientas estadísticas que permitan evaluar rigurosamente el desempeño de los algoritmos. Para ello nos basamos en los estudios realizados en \cite{Tests_01} y \cite{Tests_02}.
 
-\section{Tests}
-\subsection{Test 1}
-\subsection{Test 2}
-\subsection{Test 3}
+Los tests estadísticos se utilizan para determinar si las diferencias observadas entre algoritmos son estadísticamente significativas o simplemente producto del azar. Entre los más comunes, se encuentran los tests paramétricos, como el \textit{t-test} y el análisis de varianza (ANOVA), que asumen que los datos siguen distribuciones normales y presentan varianzas homogéneas. Estas herramientas son útiles para comparaciones simples y cuando se cumplen los supuestos necesarios. Sin embargo, en muchos escenarios, estas condiciones no se verifican, especialmente en el análisis de múltiples problemas o cuando las muestras son pequeñas.
 
-\section{Relevancia en el contexto de este TFG}
+Esto es particularmente problemático en algoritmos estocásticos, donde las distribuciones de los resultados pueden ser complejas o desconocidas. En este contexto, los tests no paramétricos han ganado popularidad debido a su menor sensibilidad a los supuestos sobre la distribución de los datos. Métodos como el test de Wilcoxon, el test de Friedman y el procedimiento \textit{post-hoc} de Nemenyi son ampliamente utilizados en la comparación de algoritmos. Estas técnicas permiten analizar conjuntos de datos más diversos, evaluando múltiples algoritmos en diferentes problemas sin necesidad de cumplir estrictos requisitos estadísticos.
+
+El uso de estos tests no solo mejora la calidad de las comparaciones experimentales, sino que también permite establecer conclusiones más robustas y generalizables sobre el desempeño relativo de los algoritmos. Su integración en los análisis experimentales es indispensable para avanzar hacia una evaluación científica rigurosa y confiable en el campo de la optimización y la inteligencia computacional.
+
+En esta sección, exploraremos los tests no paramétricos más utilizados, dividiendo su análisis en dos categorías principales: tests de comparación por parejas, que permiten comparar directamente dos algoritmos, y tests de comparación múltiple, diseñados para evaluar simultáneamente tres o más algoritmos en múltiples problemas. Estas herramientas proporcionan un marco sólido para realizar análisis estadísticos significativos en condiciones donde los supuestos de los tests paramétricos no se cumplen.
+
+\section{Comparaciones por pares}
+
+Las comparaciones por pares son uno de los métodos estadísticos más básicos utilizados en estudios experimentales para comparar el rendimiento de dos algoritmos sobre un conjunto común de problemas. En un análisis que abarca múltiples problemas, se requiere un valor para cada combinación algoritmo/problema, que usualmente es un promedio de varias ejecuciones.
+
+En esta sección, presentamos dos procedimientos para realizar comparaciones por pares:
+
+\begin{itemize}
+    \item La \textit{prueba de signos} (Sección \ref{sec:prueba_signos}), un método simple y rápido que ofrece una primera aproximación, aunque con potencia estadística limitada.
+    \item La \textit{prueba de rangos con signo de Wilcoxon} (Sección \ref{sec:prueba_wilcoxon}), un enfoque no paramétrico más robusto y confiable para detectar diferencias significativas entre dos algoritmos.
+\end{itemize}
+
+\subsection{Prueba de signos}
+\label{sec:prueba_signos}
+
+La prueba de signos es una forma sencilla y popular de comparar el rendimiento global de dos algoritmos. Consiste en contar el número de problemas en los que un algoritmo supera al otro. Este conteo se utiliza en una prueba binomial bilateral conocida como \textit{prueba de signos}. Bajo la hipótesis nula de equivalencia entre los algoritmos, se espera que cada uno gane aproximadamente en la mitad de los problemas ($n/2$).
+
+El número de victorias sigue una distribución binomial. Para valores grandes de $n$, esta distribución se aproxima a una distribución normal con media $\mu = n/2$ y desviación estándar $\sigma = \sqrt{n/2}$. La estadística de prueba $z$ se calcula como:
+
+\[
+z = \frac{W - n/2}{\sqrt{n/2}},
+\]
+
+donde $W$ es el número de victorias de uno de los algoritmos. Si $|z|$ es mayor que 1.96 (para un nivel de significancia $\alpha = 0.05$), se rechaza la hipótesis nula y se concluye que existe una diferencia significativa entre los algoritmos.
+
+Es importante no descontar los empates al aplicar esta prueba, ya que apoyan la hipótesis nula. En caso de empates, se dividen equitativamente entre ambos algoritmos. Si hay un número impar de empates, uno de ellos se ignora.
+
+\subsection{Prueba de rangos con signo de Wilcoxon}
+\label{sec:prueba_wilcoxon}
+
+La prueba de rangos con signo de Wilcoxon es un método no paramétrico utilizado para determinar si existen diferencias significativas entre las medianas de dos muestras relacionadas. Es análoga al \textit{t-test} pareado en procedimientos estadísticos no paramétricos y es especialmente útil cuando no se puede asumir normalidad en los datos.
+
+El procedimiento es el siguiente:
+
+\begin{enumerate}
+    \item Calcular las diferencias $d_i$ entre los resultados de los dos algoritmos en cada problema $i$:
+    \[
+    d_i = x_{i1} - x_{i2},
+    \]
+    donde $x_{i1}$ y $x_{i2}$ son los resultados del primer y segundo algoritmo en el problema $i$, respectivamente. Si los puntajes están en diferentes escalas, pueden normalizarse al intervalo [0,1] para evitar priorizar algún problema.
+
+    \item Excluir las diferencias que sean cero ($d_i = 0$), ya que no aportan información sobre la dirección de la diferencia.
+
+    \item Ordenar las diferencias $d_i$ según su valor absoluto y asignar rangos $R_i$, comenzando con 1 para la diferencia más pequeña. En caso de empates, se asignan rangos promedio.
+
+    \item Asignar a cada rango el signo de la diferencia correspondiente. Es decir, si $d_i > 0$, el rango $R_i$ es positivo; si $d_i < 0$, el rango $R_i$ es negativo.
+
+    \item Calcular las sumas de los rangos positivos y negativos:
+    \[
+    R^+ = \sum_{d_i > 0} R_i + \frac{1}{2} \sum_{d_i = 0} R_i,
+    \]
+    \[
+    R^- = \sum_{d_i < 0} R_i + \frac{1}{2} \sum_{d_i = 0} R_i.
+    \]
+
+    \item Determinar el estadístico de prueba $T$, que es el menor de $R^+$ y $R^-$:
+    \[
+    T = \min(R^+, R^-).
+    \]
+
+    \item Comparar $T$ con el valor crítico de la distribución de Wilcoxon para el tamaño de muestra $n$. Si $T$ es menor o igual al valor crítico, se rechaza la hipótesis nula, indicando una diferencia significativa entre los algoritmos.
+\end{enumerate}
+
+La prueba de Wilcoxon es más sensible que el \textit{t-test} pareado y no requiere la suposición de normalidad. Además, es menos afectada por valores atípicos, ya que los rangos reducen el impacto de observaciones extremas. Es importante no redondear las diferencias a pocos decimales, ya que esto puede disminuir la potencia de la prueba al aumentar el número de empates.
+
+\section{Comparaciones múltiples con un método de control}
+\label{sec:comparaciones_multiples}
+
+En muchas situaciones experimentales, es necesario comparar el rendimiento de varios algoritmos simultáneamente, especialmente cuando se desea evaluar un nuevo método frente a múltiples alternativas. Sin embargo, realizar múltiples comparaciones por pares incrementa el riesgo de cometer errores de Tipo I (rechazar incorrectamente la hipótesis nula) debido al acumulado de errores en cada prueba individual. Este fenómeno se conoce como la tasa de error familiar (\textit{Family-Wise Error Rate}, FWER).
+
+Si se comparan $k$ algoritmos y se realiza cada prueba con un nivel de significancia $\alpha$, la probabilidad de no cometer un error de Tipo I en una única comparación es $(1 - \alpha)$. Por tanto, la probabilidad de no cometer un error de Tipo I en todas las $k-1$ comparaciones es $(1 - \alpha)^{k - 1}$. De esta forma, la probabilidad de cometer al menos un error de Tipo I es:
+
+\[
+1 - (1 - \alpha)^{k - 1}.
+\]
+
+Por ejemplo, si $\alpha = 0.05$ y $k = 9$, esta probabilidad es aproximadamente $0.33$, lo cual es bastante alto.
+
+Para abordar este problema, se utilizan pruebas estadísticas diseñadas para comparaciones múltiples con un método de control. En esta sección, se describen varios métodos adecuados para este propósito:
+
+\begin{itemize}
+    \item La \textit{prueba de Friedman} y sus extensiones (Sección \ref{sec:prueba_friedman}).
+    \item Procedimientos \textit{post-hoc} para identificar diferencias específicas entre el método de control y los demás algoritmos (Sección \ref{sec:procedimientos_posthoc}).
+\end{itemize}
+
+\subsection{Prueba de Friedman y extensiones}
+\label{sec:prueba_friedman}
+
+La prueba de Friedman es un test no paramétrico para comparar más de dos muestras relacionadas. Evalúa si existen diferencias significativas en las medianas de $k$ algoritmos evaluados sobre $n$ problemas.
+
+El procedimiento es el siguiente:
+
+\begin{enumerate}
+    \item Para cada problema $i$, asignar rangos $r_{ij}$ a los algoritmos, donde $r_{ij}$ es el rango del algoritmo $j$ en el problema $i$. El mejor algoritmo recibe el rango 1, el siguiente mejor rango 2, y así sucesivamente. En caso de empates, se asignan rangos promedio.
+
+    \item Calcular el rango promedio $R_j$ de cada algoritmo:
+    \[
+    R_j = \frac{1}{n} \sum_{i=1}^{n} r_{ij}.
+    \]
+
+    \item Calcular la estadística de Friedman:
+    \[
+    \chi^2_F = \frac{12n}{k(k+1)} \left( \sum_{j=1}^{k} R_j^2 - \frac{k(k+1)^2}{4} \right).
+    \]
+
+    \item Bajo la hipótesis nula de que todos los algoritmos tienen el mismo rendimiento, $\chi^2_F$ sigue una distribución $\chi^2$ con $k-1$ grados de libertad. Si el valor calculado es mayor que el valor crítico de la distribución, se rechaza la hipótesis nula.
+\end{enumerate}
+
+Para ajustar la conservaduría de la prueba de Friedman, Iman y Davenport propusieron una modificación que utiliza una distribución $F$:
+
+\[
+F_F = \frac{(n-1) \chi^2_F}{n(k-1) - \chi^2_F},
+\]
+
+donde $F_F$ sigue una distribución $F$ con $k-1$ y $(k-1)(n-1)$ grados de libertad.
+
+\subsubsection{Prueba de rangos alineados de Friedman}
+
+La prueba de rangos alineados de Friedman mejora el enfoque anterior al considerar las diferencias en el rendimiento absoluto entre los algoritmos. El procedimiento es el siguiente:
+
+\begin{enumerate}
+    \item Para cada problema $i$, calcular el valor central (por ejemplo, la mediana) de los resultados de todos los algoritmos, denotado como $M_i$.
+
+    \item Calcular las diferencias alineadas $d_{ij}$ entre el resultado del algoritmo $j$ en el problema $i$ y el valor central $M_i$:
+    \[
+    d_{ij} = x_{ij} - M_i.
+    \]
+
+    \item Ordenar todos los valores $d_{ij}$ (para todos los algoritmos y problemas) de menor a mayor y asignar rangos $R_{ij}$. En este caso, los rangos se asignan considerando todos los $k \times n$ valores conjuntamente.
+
+    \item Calcular el rango promedio alineado $\tilde{R}_j$ para cada algoritmo:
+    \[
+    \tilde{R}_j = \frac{1}{n} \sum_{i=1}^{n} R_{ij}.
+    \]
+
+    \item Calcular la estadística de Friedman alineada:
+    \[
+    \chi^2_{F_{aligned}} = \frac{12}{k(k+1)} \left( \sum_{j=1}^{k} \tilde{R}_j^2 - \frac{k(k+1)^2}{4} \right).
+    \]
+
+    \item Comparar $\chi^2_{F_{aligned}}$ con el valor crítico de la distribución $\chi^2$ con $k-1$ grados de libertad.
+\end{enumerate}
+
+Esta prueba es más sensible que la prueba de Friedman estándar, ya que tiene en cuenta las magnitudes de las diferencias entre los algoritmos.
+
+\subsubsection{Prueba de Quade}
+
+La prueba de Quade introduce ponderaciones basadas en la dificultad relativa de los problemas. El procedimiento es:
+
+\begin{enumerate}
+    \item Calcular el rango $r_{ij}$ de los algoritmos en cada problema $i$, como en la prueba de Friedman.
+
+    \item Para cada problema $i$, calcular el rango $Q_i$ basado en la amplitud de las diferencias en ese problema. Esto se hace calculando la diferencia entre el mejor y el peor resultado en el problema $i$, y luego asignando rangos a los problemas según estas diferencias (el problema con la menor diferencia recibe el rango 1).
+
+    \item Calcular los estadísticos $S_{ij}$:
+    \[
+    S_{ij} = Q_i \left( r_{ij} - \frac{k+1}{2} \right).
+    \]
+
+    \item Calcular la suma $S_j$ para cada algoritmo:
+    \[
+    S_j = \sum_{i=1}^{n} S_{ij}.
+    \]
+
+    \item Calcular el estadístico $F_Q$:
+    \[
+    F_Q = \frac{(k - 1) \sum_{j=1}^{k} S_j^2}{k \sum_{j=1}^{k} \sum_{i=1}^{n} (S_{ij} - \bar{S}_j)^2},
+    \]
+    donde $\bar{S}_j$ es el promedio de $S_{j}$.
+
+    \item Comparar $F_Q$ con el valor crítico de la distribución $F$ con $k-1$ y $(k-1)(n-1)$ grados de libertad.
+\end{enumerate}
+
+La prueba de Quade es útil cuando se sospecha que las diferencias entre los algoritmos varían de un problema a otro, y se desea dar más peso a los problemas donde esas diferencias son mayores.
+
+\subsection{Procedimientos post-hoc}
+\label{sec:procedimientos_posthoc}
+
+Una vez que la prueba de Friedman (o una de sus variantes) indica que existen diferencias significativas entre los algoritmos, es útil identificar cuáles algoritmos difieren del método de control. Para ello, se emplean procedimientos \textit{post-hoc} que ajustan los niveles de significancia para controlar el FWER.
+
+El estadístico utilizado para comparar el algoritmo $i$ con el algoritmo $j$ es:
+
+\[
+z = \frac{R_i - R_j}{\sqrt{\frac{k(k+1)}{6n}}},
+\]
+
+donde $R_i$ y $R_j$ son los rangos promedio de los algoritmos $i$ y $j$, respectivamente, obtenidos de la prueba de Friedman u otra prueba similar.
+
+Los valores $p$ asociados se obtienen de la distribución normal estándar $N(0,1)$ utilizando el valor absoluto de $z$. Sin embargo, estos valores $p$ no son adecuados para comparaciones múltiples porque no tienen en cuenta las demás comparaciones en la familia de hipótesis. Por ello, es necesario ajustar los valores $p$ para controlar el FWER.
+
+A continuación, se describen varios procedimientos para ajustar los valores $p$. La notación utilizada es:
+
+\begin{itemize}
+    \item Los índices $i$ y $j$ corresponden a comparaciones o hipótesis específicas dentro de la familia de hipótesis, ordenadas según sus valores $p$ de forma ascendente. El índice $i$ se refiere a la hipótesis cuya APV se está calculando, mientras que el índice $j$ se refiere a otra hipótesis en la familia.
+    \item $p_j$ es el valor $p$ obtenido para la hipótesis $j$.
+\end{itemize}
+
+Los procedimientos de ajuste de valores $p$ se pueden clasificar en varias categorías:
+
+\subsubsection{Procedimientos de un solo paso}
+
+\begin{itemize}
+    \item \textbf{Bonferroni-Dunn}: Este método ajusta el nivel de significancia $\alpha$ en un solo paso dividiéndolo por el número de comparaciones realizadas ($k - 1$). Es el procedimiento más simple pero también el más conservador, lo que significa que tiene menos potencia estadística.
+
+    El valor $p$ ajustado (APV) para la hipótesis $i$ se calcula como:
+
+    \[
+    \text{APV}_i = \min\{(k - 1) p_i, 1\}.
+    \]
+\end{itemize}
+
+\subsubsection{Procedimientos de paso descendente (step-down)}
+
+\begin{itemize}
+    \item \textbf{Holm}: Este procedimiento ajusta el nivel de significancia de manera secuencial descendente. Se ordenan los valores $p$ de menor a mayor ($p_1 \leq p_2 \leq \dots \leq p_{k-1}$), y se etiquetan las hipótesis correspondientes como $H_1, H_2, \dots, H_{k-1}$.
+
+    El método comienza comparando $p_1$ con $\alpha / (k - 1)$. Si $p_1 \leq \alpha / (k - 1)$, se rechaza $H_1$ y se procede a comparar $p_2$ con $\alpha / (k - 2)$. Este proceso continúa hasta que se encuentra un $p_i$ que no cumple la condición, momento en el cual se detiene y se acepta la hipótesis correspondiente y todas las restantes.
+
+    El valor $p$ ajustado para la hipótesis $i$ se calcula como:
+
+    \[
+    \text{APV}_i = \min\left\{\max_{1 \leq j \leq i} [(k - j) p_j], 1\right\}.
+    \]
+
+    \item \textbf{Holland}: Similar al método de Holm, pero utiliza una fórmula basada en la probabilidad acumulada. Rechaza las hipótesis $H_1$ a $H_{i-1}$ si $i$ es el menor entero tal que $p_i > 1 - (1 - \alpha)^{k - i}$.
+
+    El valor $p$ ajustado se calcula como:
+
+    \[
+    \text{APV}_i = \min\left\{\max_{1 \leq j \leq i} [1 - (1 - p_j)^{k - j}], 1\right\}.
+    \]
+
+    \item \textbf{Finner}: También es un procedimiento de paso descendente que ajusta $\alpha$ utilizando una función exponencial.
+
+    Rechaza las hipótesis $H_1$ a $H_{i-1}$ si $i$ es el menor entero tal que $p_i > 1 - (1 - \alpha)^{(k - 1)/i}$.
+
+    El valor $p$ ajustado se calcula como:
+
+    \[
+    \text{APV}_i = \min\left\{\max_{1 \leq j \leq i} \left[1 - (1 - p_j)^{(k - 1)/j}\right], 1\right\}.
+    \]
+\end{itemize}
+
+\subsubsection{Procedimientos de paso ascendente (step-up)}
+
+\begin{itemize}
+    \item \textbf{Hochberg}: Este método ajusta el nivel de significancia de manera secuencial ascendente. Comienza comparando el valor $p$ más grande $p_{k-1}$ con $\alpha$. Si $p_{k-1} \leq \alpha$, se rechaza la hipótesis correspondiente y todas las hipótesis con valores $p$ menores. Si no, se compara $p_{k-2}$ con $\alpha / 2$, y así sucesivamente, hasta encontrar el primer $p_i$ que cumple la condición.
+
+    El valor $p$ ajustado se calcula como:
+
+    \[
+    \text{APV}_i = \max_{(k - 1) \geq j \geq i} \left[(k - j) p_j\right].
+    \]
+
+    \item \textbf{Hommel}: Este procedimiento es más complejo y tiene mayor potencia estadística. Busca el mayor entero $j$ para el cual $p_{k - j + i} > \alpha / j$ para todos $i = 1, \dots, j$. Si no existe tal $j$, se rechazan todas las hipótesis; de lo contrario, se rechazan todas las hipótesis con $p_i \leq \alpha / j$.
+
+    El cálculo del APV para la hipótesis $i$ se realiza siguiendo un algoritmo específico que se puede encontrar en la literatura (debido a su complejidad, no se incluye aquí).
+
+    \item \textbf{Rom}: Es una modificación del procedimiento de Hochberg diseñada para aumentar la potencia estadística. Funciona de la misma manera que el método de Hochberg, pero los valores de $\alpha$ se calculan mediante la siguiente expresión:
+
+    \[
+    \alpha_{k - i} = \left[\sum_{j = 1}^{i - 1} \alpha_j - \sum_{j = 1}^{i - 2} \left( \frac{i}{k} \alpha_{i - j} \right)\right] / i,
+    \]
+
+    donde $\alpha_{k - 1} = \alpha$ y $\alpha_{k - 2} = \alpha / 2$. Los coeficientes $r_{k - j}$ se obtienen de esta ecuación y se utilizan para calcular los APVs:
+
+    \[
+    \text{APV}_i = \max_{(k - 1) \geq j \geq i} [r_{k - j} p_j],
+    \]
+
+    donde $r_{k - j}$ se obtiene de la ecuación anterior (por ejemplo, $r = \{1, 2, 3, 3.814, 4.755, 5.705, 6.655, \dots\}$).
+\end{itemize}
+
+\subsubsection{Procedimientos de dos pasos}
+
+\begin{itemize}
+    \item \textbf{Li}: Este procedimiento propone una estrategia de rechazo en dos pasos.
+
+    \begin{enumerate}
+        \item \textbf{Paso 1}: Rechazar todas las hipótesis $H_i$ si $p_{k - 1} \leq \alpha$. De lo contrario, aceptar la hipótesis correspondiente a $p_{k - 1}$ y proceder al Paso 2.
+
+        \item \textbf{Paso 2}: Rechazar cualquier $H_i$ restante con $p_i \leq \left( \frac{1 - p_{k - 1}}{1 - \alpha} \right) \alpha$.
+
+        \item Los valores $p$ ajustados se calculan como:
+
+        \[
+        \text{APV}_i = \frac{p_i}{p_i + 1 - p_{k - 1}}.
+        \]
+    \end{enumerate}
+\end{itemize}
+
+Estos procedimientos permiten ajustar los valores $p$ obtenidos en las comparaciones múltiples, controlando el FWER y mejorando la validez estadística de los resultados. La elección del procedimiento adecuado depende del balance deseado entre el control del error tipo I y la potencia estadística.
+\vspace{10px}
+Los tests de comparación por parejas y múltiple proporcionan un marco robusto para realizar análisis estadísticos en los algoritmos que compararemos más adelante. Mediante el correcto uso de los tests, podremos diferenciar si los resultados obtenidos se deben a la aleatoriedad intrínseca del problema o si realemente un algoritmo es superior a otro.
+
 
 \endinput
 %--------------------------------------------------------------------

@@ -3,9 +3,15 @@
 
 \chapter{Agrupamiento de variables}
 
-Inspirados por la metodología del análisis clúster, estudiaremos los fundamentos teóricos del agrupamiento diferencial, una técnica de agrupamiento de variables que permite descomponer un problema en subproblemas menores. Esta metodología pretende dividir un conjunto de variables acorde a la interdependencia que se establece entre ellas cuando se trata de optimizar una función objetivo.
+En esta sección, estudiaremos los fundamentos teóricos del agrupamiento diferencial \cite{DG2} \cite{RDG} \cite{Teoremas_DG2} \cite{ERDG} , una técnica de agrupamiento automático de variables que permite descomponer un problema en subproblemas menores. Esta metodología pretende dividir un conjunto de variables acorde a la interdependencia que se establece entre ellas cuando se trata de optimizar una función objetivo.
 
-Al igual que en el análisis clúster, que agrupa conjuntos de datos en clústers de forma que en cada clúster los datos sean lo más parecidos posibles y distintos del resto de clúster, el objetivo de esta técnica es separar las variables en conjuntos, de forma que cada conjunto sea independiente del resto y dentro de cada conjunto ninguna variable sea independiente. La principal diferencia radica en que en el análisis clúster agrupamos datos acorde al valor de las variables y en el agrupamiento de variables lo que agrupamos son las variables acorde a la dependencia que existe entre ellas. 
+Al igual que en el análisis clúster, que agrupa conjuntos de datos en grupos de forma que en cada uno, los datos sean lo más parecidos posibles y distintos del resto de clústers, el objetivo de esta técnica es separar las variables en conjuntos, de forma que cada uno sea independiente del resto y dentro de cada conjunto ninguna variable sea independiente. La principal diferencia radica en que en el análisis clúster agrupamos datos acorde al valor de las variables y en el agrupamiento diferencial lo que agrupamos son las variables acorde a la dependencia que existe entre ellas.
+
+Las dos principales ventajas del agrupamiento diferencial con respecto a otras técnicas de agrupamiento, como el agrupamiento aleatorio, o el agrupamiento en k-componetes son:
+\begin{itemize}
+	\item \textbf{No requiere de parámetros:} el número y tamaño de los grupos se decide acorde a las interacciones detectadas en las variables, no es necesario fijar el numero de grupos ni el tamaño de estos previamente.
+	\item \textbf{Tiene una estrategia:} utiliza pequeñas perturbaciones en las variables para detectar si dos variables interactúan y agruparlas.
+\end{itemize}
 
 A continuación, se exponen las definiciones y teoremas necesarios para entender el agrupamiento diferencial desde un punto de vista teórico. En la segunda parte de este TFG, se implementarán distintas variantes de esta técnica para probar su efectividad a la hora de hibridarlas con algoritmos que permitan optimizar una función objetivo.
 
@@ -79,6 +85,10 @@ Las variables de decisión \( x_i \) y \( x_j \) son independientes si para cual
 
 \section{Teoremas}
 
+En esta sección se presentan los teoremas necesarios para comprender el agrupamiento diferencial.
+
+\subsection{Agrupamiento diferencial}
+
 \begin{teorema}
 \label{T1}
 Sea \( f(\mathbf{x}) \) una función (parcialemente) aditivamente separable. Para todo \( a, b_1 \neq b_2, \delta \in \mathbb{R}, \delta \neq 0 \), si se cumple la siguiente condición:
@@ -146,7 +156,11 @@ Entonces, para todo \( x_q \notin \mathbf{x}_i \) tenemos
 \end{equation}
 \end{proof}
 
-El Teorema \ref{T1} es el que nos servirá en la segunda parte para diseñar el algoritmo de agrupamiento diferencial.
+El Teorema \ref{T1} es el que nos servirá en la segunda parte para diseñar el algoritmo de agrupamiento diferencial. 
+
+\subsection{Agrupamiento diferencial recursivo}
+
+A continuación se presentan los teoremas y proposiciones necesarios para el agrupamiento diferencial recursivo.
 
 \textbf{Notación:} Sea \( X \) el conjunto de variables de decisión \(\{x_1, \ldots, x_n\}\) y \( U_X \) el conjunto de vectores unitarios en el espacio de decisión \(\mathbb{R}^n\). Sea \( X_1 \) un subconjunto de variables de decisión \( X_1 \subset X \) y \( U_{X_1} \) un subconjunto de \( U_X \) tal que para cualquier vector unitario \( \mathbf{u} = (u_1, \ldots, u_n) \in U_{X_1} \), tenemos \( u_i = 0 \) si \( x_i \notin X_1 \).
 
@@ -266,6 +280,57 @@ f(\mathbf{x}^* + l_1 \mathbf{u}_1 + l_2 \mathbf{u}_2) - f(\mathbf{x}^* + l_2 \ma
 
 Así, la Afirmación 2 queda probada, y la Afirmación 1 y el Corolario \ref{C1} son verdaderos.
 \end{proof}
+
+Supongamos que \( X_1 \) y \( X_2 \) son dos subconjuntos mutuamente exclusivos de variables. Si \( X_1 \) está relacionado con \( X_2 \), el método RDG divide \( X_2 \) en dos subconjuntos de igual tamaño y mutuamente exclusivos, \( X_3 \) y \( X_4 \).
+
+Definimos:
+
+\begin{equation}
+\Delta_1 = f(x^* + l_1 u_1 + l_2(u_3 + u_4)) - f(x^* + l_2(u_3 + u_4)),
+\label{EQ35}
+\end{equation}
+\begin{equation}
+\Delta_2 = f(x^* + l_1 u_1) - f(x^*).
+\label{EQ36}
+\end{equation}
+
+\begin{proposicion} 
+\label{P2}
+Si \( (\Delta_1 - \Delta_2) = (\Delta'_1 - \Delta'_2) \), entonces \( X_1 \) no está relacionado con \( X_4 \); de lo contrario, \( X_1 \) está relacionado con \( X_4 \).
+\end{proposicion}
+
+\begin{proof}
+
+Si \( (\Delta_1 - \Delta_2) = (\Delta'_1 - \Delta'_2) \), dado que \( \Delta_2 = \Delta'_2 \), es evidente que \( \Delta_1 = \Delta'_1 \):
+\begin{equation}
+f(x^* + l_1 u_1 + l_2(u_3 + u_4)) - f(x^* + l_2(u_3 + u_4)) = f(x^* + l_1 u_1 + l_2 u_3) - f(x^* + l_2 u_3).
+\label{EQ37}
+\end{equation}
+
+Sea \( x' = x^* + l_2 u_3 \). Entonces, la ecuación \eqref{EQ37} se convierte en:
+\begin{equation}
+f(x' + l_1 u_1 + l_2 u_4) - f(x' + l_2 u_4) = f(x' + l_1 u_1) - f(x').
+\label{EQ38}
+\end{equation}
+
+La ecuación \eqref{EQ38} indica que \( X_1 \) no está relacionado con \( X_4 \).
+
+Si \( (\Delta_1 - \Delta_2) \neq (\Delta'_1 - \Delta'_2) \), dado que \( \Delta_2 = \Delta'_2 \), es evidente que \( \Delta_1 \neq \Delta'_1 \):
+\begin{equation}
+f(x^* + l_1 u_1 + l_2(u_3 + u_4)) - f(x^* + l_2(u_3 + u_4)) \neq f(x^* + l_1 u_1 + l_2 u_3) - f(x^* + l_2 u_3).
+\label{EQ39}
+\end{equation}
+
+Sea \( x' = x^* + l_2 u_3 \). Entonces, la ecuación \eqref{EQ39} se convierte en:
+\begin{equation}
+f(x' + l_1 u_1 + l_2 u_4) - f(x' + l_2 u_4) \neq f(x' + l_1 u_1) - f(x').
+\label{EQ40}
+\end{equation}
+
+Esto implica que \( X_1 \) está relacionado con \( X_4 \).
+
+\end{proof}
+
 
 
 %\section{Problemas descomponibles mediante agrupamiento de variables}

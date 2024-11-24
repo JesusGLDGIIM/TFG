@@ -10,9 +10,9 @@
 
 \chapter{Introducción}
 
-\indent Cuando enfrentamos un problema de optimización que depende de pocos factores, es sencillo idear estrategias para resolverlo y encontrar una solución. Sin embargo, a medida que crece el número de variables, la complejidad del problema aumenta, y se hace inviable resolverlo mediante métodos tradicionales. Para abordar esta problemática, se han diseñado algoritmos específicos para manejar la alta dimensionalidad utilizando metaheurísticas. Estas buscan optimizar la exploración del espacio de búsqueda, logrando un equilibrio entre exploración y explotación, lo que permite realizar búsquedas efectivas en un espacio donde la porción representada por la población de búsqueda es ínfima comparada con el espacio total. No obstante, estos algoritmos presentan limitaciones, y cuando el número de variables es suficientemente alto, debemos explorar otras soluciones.
+\indent Cuando enfrentamos un problema de optimización que depende de pocos factores, es sencillo idear estrategias para resolverlo y encontrar una solución. Sin embargo, a medida que crece el número de variables, la complejidad del problema aumenta, y se hace inviable resolverlo mediante métodos tradicionales. Para abordar esta problemática, se han diseñado algoritmos específicos para manejar la alta dimensionalidad utilizando metaheurísticas. Estas buscan optimizar la exploración del espacio de búsqueda, logrando un equilibrio entre exploración y explotación, lo que permite realizar búsquedas efectivas en un espacio donde la porción representada por la población de búsqueda es ínfima comparada con el espacio total. No obstante, estos algoritmos presentan limitaciones, y cuando el número de variables es suficientemente alto, hay dos opciones, por un lado, las metaheurísticas especialmente diseñado para LSGO, como SHADE-ILS, y por el otro, técnicas que permitan reducir la dimensionalidad que aborda el algoritmo.
 
-En este trabajo, proponemos utilizar la técnica del \textbf{agrupamiento diferencial de variables}, que permite agrupar las variables en conjuntos, de forma que cada variable interactúa principalmente con las de su propio grupo y no (o mínimamente) con las de otros grupos. Así, podemos reducir la dimensión efectiva del problema, convirtiendo un problema de optimización de gran escala en problemas de optimización de menor tamaño. Nuestro objetivo es hibridar esta técnica con algoritmos diseñados para la alta dimensionalidad y con algoritmos que no están específicamente adaptados para ello. Compararemos el rendimiento aplicando y no aplicando esta técnica en ambos tipos de algoritmos.
+En este trabajo, proponemos utilizar técnicas de \textbf{agrupamiento diferencial automático de variables}, que permite identificar las variables que interactúan entre sí, para asignarles el mismo grupo. De esta forma somos capaces de reducir el problema en subproblemas, uno para cada subgrupo ya que cada variable solo interactúa con las de su propio grupo y no (o mínimamente) con las de otros grupos. Así, podemos reducir la dimensión efectiva del problema, convirtiendo un problema de optimización de gran escala en problemas de optimización de menor tamaño. Nuestro objetivo es hibridar esta técnica con algoritmos diseñados para la alta dimensionalidad y con algoritmos que no están específicamente adaptados para ello. Compararemos el rendimiento aplicando y no aplicando esta técnica en ambos tipos de algoritmos.
 
 Para probar la efectividad de esta técnica, se han planteado los siguientes objetivos:
 
@@ -27,7 +27,7 @@ Para probar la efectividad de esta técnica, se han planteado los siguientes obj
 
 \subsection*{Parte informática}
 \begin{itemize}
-    \item \textbf{Desarrollo de una biblioteca de algoritmos}: Implementación de algoritmos para optimización continua sin restricciones en el lenguaje de programación Julia.
+    \item \textbf{Desarrollo de una biblioteca de técnicas de agrupamiento}: Implementación de algoritmos para optimización continua sin restricciones en el lenguaje de programación Julia y de técnicas de agrupamiento automático de variables.
     \item \textbf{Selección de algoritmos}: Descripción de los algoritmos que se incluirán en la biblioteca y que se emplearán en las comparaciones.
     \item \textbf{Evaluación experimental}: Análisis de los algoritmos en el benchmark \textit{cec2013lsgo}, presentación de resultados y conclusiones obtenidas.
 \end{itemize}
@@ -39,17 +39,13 @@ Además, se hace una estimación del presupuesto y del tiempo dedicado a cada ta
 
 La parte Matemática está dividida en 3 capítulos, un primer capítulo donde se realizan definiciones importantes sobre optimización de funciones, se exponen algunos teoremas necesarios y se explican los métodos de búsqueda lineal y el algoritmo L-BFGS-B, que será un componente importante de nuestro algoritmo final. El segundo capítulo de esta sección se define el agrupamiento diferencial y se citan y demuestran los teoremas más importantes que justifican el diseño y utilidad de los algoritmos de agrupamiento automático de variables. Además se proporcionan algunas definiciones previas necesarias sobre separabilidad de funciones. Por último en la tercera sección de esta parte, se explican los fundamentos de los tests estadísticos y se definen los tests que suelen ser utilizados para comparar algoritmos. 
 
-En la parte informática, tenemos un capitulo inicial donde se definen los componentes de los algoritmos que formarán nuestra propuesta, una segunda parte donde se explican los algoritmos que luego hibridaremos con el agrupamiento de variables. En tercer lugar se explicará nuestra propuesta: combinar ERDG con SHADE y SHADEils. Por último, unas secciones finales donde se exponen los resultados obtenidos y las conclusiones que hemos obtenido de los resultados.
+En la parte informática, tenemos un capitulo inicial donde se definen los componentes de los algoritmos que formarán nuestra propuesta, una segunda parte donde se explican los algoritmos que luego hibridaremos con el agrupamiento de variables. En tercer lugar se explicará nuestra propuesta: combinar ERDG con SHADE y SHADE-ILS. Por último, unas secciones finales donde se exponen los resultados obtenidos y las conclusiones que hemos obtenido de los resultados.
 
-\section*{Repaso Bibliográfico}
+\chapter{Repaso Bibliográfico}
 
-En esta sección, haremos un repaso bibliográfico sobre la optimización global a gran escala (LSGO, por sus siglas en inglés, \textit{Large Scale Global Optimization}). Se proporcionará un contexto general de las distintas técnicas metaheurísticas y enfoques que existen para abordar este tipo de problemas, y se situarán nuestros algoritmos en este contexto, explicando en mayor profundidad aquellas técnicas que están más relacionadas con los algoritmos \textit{SHADE} \cite{TanabeShade}, \textit{SHADEils} \citep{Molina2018}, \textit{ERDG} \cite{ERDG} y \textit{DG2} \cite{DG2}. Para ello nos basaremos en el estudio realizado por \citeauthor{Review_I} en \cite{Review_I} y \cite{Review_II}.
+En esta sección, haremos un repaso bibliográfico sobre la optimización global a gran escala (LSGO, por sus siglas en inglés, \textit{Large Scale Global Optimization}). Se proporcionará un contexto general de las distintas técnicas metaheurísticas y enfoques que existen para abordar este tipo de problemas, y se situarán nuestros algoritmos en este contexto, explicando en mayor profundidad aquellas técnicas que están más relacionadas con los algoritmos \textit{SHADE} \cite{TanabeShade}, \textit{SHADE-ILS} \citep{Molina2018}, \textit{ERDG} \cite{ERDG} y \textit{DG2} \cite{DG2}. Para ello nos basaremos en el estudio realizado por \citeauthor{Review_I} en \cite{Review_I} y \cite{Review_II}.
 
-\subsection*{Introducción a la Optimización Global a Gran Escala}
-
-La \textit{maldición de la dimensionalidad} \cite{bellman_adaptive_1961} ha sido un problema fundamental en la optimización global. Este problema se acentúa en la optimización global a gran escala, donde el número de variables y restricciones crece exponencialmente. El objetivo principal de las técnicas LSGO es mejorar la escalabilidad de los algoritmos de optimización a medida que el número de variables, \( n \), y su dimensionalidad crece.
-
-\subsection*{Enfoques Principales en LSGO}
+\subsection{Enfoques Principales en LSGO}
 
 A continuación, se presentan los enfoques principales en LSGO, los cuales se han desarrollado para afrontar la complejidad de los problemas de optimización de gran escala:
 
@@ -62,7 +58,7 @@ A continuación, se presentan los enfoques principales en LSGO, los cuales se ha
     \item \textbf{Paralelización}: Uso de múltiples instancias de algoritmos para acelerar la búsqueda.
 \end{enumerate}
 
-\subsection*{Explotación de la Estructura del Problema (evitando la caja negra)}
+\subsection{Explotación de la Estructura del Problema (evitando la caja negra)}
 
 Explotar la estructura del problema es común en diversas áreas de la optimización. La optimización de tipo \textit{gray-box} es un concepto relativamente nuevo que se centra en incorporar la estructura del problema en el proceso de optimización. Este enfoque busca descubrir y explorar un “orden oculto”, un concepto ampliamente estudiado en computación evolutiva en el contexto del aprendizaje de dependencias (\textit{linkage learning}). Las dependencias entre variables son cruciales para el rendimiento de los algoritmos genéticos (GAs). Sin conocer estas dependencias, incluso problemas separables pueden ser exponencialmente difíciles para GAs simples, y su resolución puede requerir tamaños de población exponencialmente grandes para encontrar el óptimo global.
 
@@ -142,7 +138,7 @@ Para descubrir la estructura interna del problema, existen dos aproximaciones, l
 
 Tras haber establecido una clasificación, podemos observar que DG2 y ERDG pertenecen a la categoría de algoritmos explícitos, basados en diferencias finitas y automáticos.
 
-\subsection*{Hibridación y Algoritmos Meméticos}
+\subsection{Hibridación y Algoritmos Meméticos}
 
 El teorema de No Free Lunch \cite{no_free_lunch} indica que ningún algoritmo de búsqueda puede superar consistentemente a todos los demás en todos los problemas posibles. La \textbf{hibridación} busca combinar las fortalezas de diferentes algoritmos para mejorar su rendimiento, la calidad de las soluciones y su integración en sistemas más amplios.
 
@@ -151,7 +147,7 @@ El teorema de No Free Lunch \cite{no_free_lunch} indica que ningún algoritmo de
 Estos algoritmos se basan únicamente en búsqueda local sin un componente global explícito. Por ejemplo, el \textit{Multiple Trajectory Search} (MTS) emplea tres métodos de búsqueda local, seleccionando el mejor para optimizar en vecindades específicas. Este enfoque ha demostrado eficacia en problemas de hasta 1000 dimensiones.
 
 \item{Algoritmos Meméticos}
-Integran búsqueda local dentro de un marco evolutivo global, balanceando exploración y explotación. Son populares en la optimización de gran escala, destacándose en competiciones de LSGO. Un ejemplo es el algoritmo SHADEils, que utilizaremos en nuestra propuesta. Los principales aspectos de diseño incluyen:
+Integran búsqueda local dentro de un marco evolutivo global, balanceando exploración y explotación. Son populares en la optimización de gran escala, destacándose en competiciones de LSGO. Un ejemplo es el algoritmo SHADE-ILS, que utilizaremos en nuestra propuesta. Los principales aspectos de diseño incluyen:
 \begin{itemize}
     \item \textbf{Frecuencia de búsqueda local:} Puede ser fija, adaptativa o probabilística.
     \item \textbf{Selección de soluciones:} Basada en rendimiento, aleatoriedad o todas las soluciones.
@@ -163,7 +159,7 @@ Integran búsqueda local dentro de un marco evolutivo global, balanceando explor
 Combina la descomposición de problemas con algoritmos meméticos. Los problemas se dividen en subproblemas optimizados con algoritmos globales seguidos de episodios de búsqueda local. 
 \end{itemize}
 
-\subsection*{Operadores de Muestreo y Variación en DE y PSO}
+\subsection{Operadores de Muestreo y Variación en DE y PSO}
 
 Los operadores de muestreo y variación buscan mantener la diversidad en la población y mejorar la eficacia de los algoritmos en la exploración de grandes espacios de búsqueda. Dos enfoques comunes son:
 
@@ -171,10 +167,10 @@ Los operadores de muestreo y variación buscan mantener la diversidad en la pobl
 
 \item{Evolución Diferencial (DE)}
 
-La Evolución Diferencial (DE) \cite{DE} es un algoritmo popular en la optimización global debido a su simplicidad y efectividad. Variantes como \textit{SHADE} y \textit{SHADEils} han surgido como adaptaciones de DE para problemas de gran escala:
+La Evolución Diferencial (DE) \cite{DE} es un algoritmo popular en la optimización global debido a su simplicidad y efectividad. Variantes como \textit{SHADE} y \textit{SHADE-ILS} han surgido como adaptaciones de DE para problemas de gran escala:
 \begin{itemize}
     \item \textbf{SHADE}: Una variante de DE que ajusta adaptativamente el tamaño de la población y los parámetros de mutación para mantener la diversidad en poblaciones grandes.
-    \item \textbf{SHADEils}: Extiende SHADE mediante la integración de estrategias de búsqueda local, mejorando la precisión en problemas de alta dimensionalidad.
+    \item \textbf{SHADE-ILS}: Extiende SHADE mediante la integración de estrategias de búsqueda local, mejorando la precisión en problemas de alta dimensionalidad.
 \end{itemize}
 
 \item{Particle Swarm Optimization (PSO)}
@@ -227,6 +223,6 @@ PSO \cite{PSO} es un método basado en el comportamiento social de partículas. 
 \label{tab:sampling_variation}
 \end{table}
 
-Una vez terminada una exposición de donde se sitúan los algoritmos que vamos a utilizar, discutiremos sus propiedades teóricas y realizaremos un estudio comparativo para comprobar si el agrupamiento diferencial de variables es efectivo en todos los casos. Llegaremos a la conclusión de que no se puede aplicar directamente la descomposición de variables con cualquier algoritmo. Los resultados de SHADEils, demuestran que en algoritmos pensados para al alta dimensionalidad, aplicar descomposición no necesariamente mejora los resultados obtenidos, y es necesario realizar mejoras en este algoritmo si se quiere utilizar con problemas descompuestos. Esto último, se deja como trabajo futuro.
+Una vez terminada una exposición de donde se sitúan los algoritmos que vamos a utilizar, discutiremos sus propiedades teóricas y realizaremos un estudio comparativo para comprobar si el agrupamiento diferencial de variables es efectivo en todos los casos. Llegaremos a la conclusión de que no se puede aplicar directamente la descomposición de variables con cualquier algoritmo. Los resultados de SHADE-ILS, demuestran que en algoritmos pensados para al alta dimensionalidad, aplicar descomposición no necesariamente mejora los resultados obtenidos, y es necesario realizar mejoras en este algoritmo si se quiere utilizar con problemas descompuestos. Esto último, se deja como trabajo futuro.
 
 \endinput
