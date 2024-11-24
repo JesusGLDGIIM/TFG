@@ -1,0 +1,62 @@
+Función 1:
+Evaluaciones ERDG: 2998
+Evaluaciones DG2: 500501
+Son iguales
+Función 2:
+Evaluaciones ERDG: 2998
+Evaluaciones DG2: 500501
+Son iguales
+Función: 3
+Evaluaciones ERDG: 3996
+Evaluaciones DG2: 500501
+Son iguales
+Función: 4
+Evaluaciones ERDG: 5332
+Evaluaciones DG2: 500501
+Son iguales
+Función: 5
+Evaluaciones ERDG: 5395
+Evaluaciones DG2: 500501
+Son iguales
+Función: 6 @@@@@@   
+Evaluaciones ERDG: 5901
+Evaluaciones DG2: 500501
+No son iguales
+Función: 7 @@@@@@
+Evaluaciones ERDG: 5562
+Evaluaciones DG2: 500501
+No son iguales
+Función 8:
+Evaluaciones ERDG: 8449
+Evaluaciones DG2: 500501
+Son casi iguales (difieren en un grupo por una variable)
+Función: 9
+Evaluaciones ERDG: 8780
+Evaluaciones DG2: 500501
+Son iguales
+Función: 10 @@@@@@
+Evaluaciones ERDG: 8806
+Evaluaciones DG2: 500501
+No son iguales
+Función: 11
+Evaluaciones ERDG: 9202
+Evaluaciones DG2: 500501
+No son iguales
+Función: 12
+Evaluaciones ERDG: 30440
+Evaluaciones DG2: 500501
+Son iguales
+Función: 13 @@@@@@
+Evaluaciones ERDG: 7571
+Evaluaciones DG2: 409966
+No son iguales
+Función: 14
+Evaluaciones ERDG: 8867
+Evaluaciones DG2: 500501
+Son iguales
+Función: 15
+Evaluaciones ERDG: 3996
+Evaluaciones DG2: 500501
+Son iguales
+
+Diferentes: 6, 7, 10, 11, 13

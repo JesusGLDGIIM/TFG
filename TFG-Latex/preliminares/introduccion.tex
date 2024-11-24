@@ -16,7 +16,7 @@ En este trabajo, proponemos utilizar técnicas de \textbf{agrupamiento diferenci
 
 Para probar la efectividad de esta técnica, se han planteado los siguientes objetivos:
 
-\section*{Objetivos}
+\section{Objetivos}
 
 \subsection*{Parte matemática}
 \begin{itemize}
@@ -32,7 +32,7 @@ Para probar la efectividad de esta técnica, se han planteado los siguientes obj
     \item \textbf{Evaluación experimental}: Análisis de los algoritmos en el benchmark \textit{cec2013lsgo}, presentación de resultados y conclusiones obtenidas.
 \end{itemize}
 
-\section*{Estructura de la memoria}
+\section{Estructura de la memoria}
 
 El trabajo se divide en tres partes claramente diferenciadas y cada parte está dividida en capítulos. Ademas de las dos partes que constituyen el contenido de este TFG, tenemos esta primera sección introductoria, donde se pone en contexto el trabajo, se definen los objetivos y se hace un repaso de la bibliografía necesaria. 
 Además, se hace una estimación del presupuesto y del tiempo dedicado a cada tarea.
@@ -45,7 +45,7 @@ En la parte informática, tenemos un capitulo inicial donde se definen los compo
 
 En esta sección, haremos un repaso bibliográfico sobre la optimización global a gran escala (LSGO, por sus siglas en inglés, \textit{Large Scale Global Optimization}). Se proporcionará un contexto general de las distintas técnicas metaheurísticas y enfoques que existen para abordar este tipo de problemas, y se situarán nuestros algoritmos en este contexto, explicando en mayor profundidad aquellas técnicas que están más relacionadas con los algoritmos \textit{SHADE} \cite{TanabeShade}, \textit{SHADE-ILS} \citep{Molina2018}, \textit{ERDG} \cite{ERDG} y \textit{DG2} \cite{DG2}. Para ello nos basaremos en el estudio realizado por \citeauthor{Review_I} en \cite{Review_I} y \cite{Review_II}.
 
-\subsection{Enfoques Principales en LSGO}
+\section{Enfoques Principales en LSGO}
 
 A continuación, se presentan los enfoques principales en LSGO, los cuales se han desarrollado para afrontar la complejidad de los problemas de optimización de gran escala:
 
@@ -58,7 +58,7 @@ A continuación, se presentan los enfoques principales en LSGO, los cuales se ha
     \item \textbf{Paralelización}: Uso de múltiples instancias de algoritmos para acelerar la búsqueda.
 \end{enumerate}
 
-\subsection{Explotación de la Estructura del Problema (evitando la caja negra)}
+\section{Explotación de la Estructura del Problema (evitando la caja negra)}
 
 Explotar la estructura del problema es común en diversas áreas de la optimización. La optimización de tipo \textit{gray-box} es un concepto relativamente nuevo que se centra en incorporar la estructura del problema en el proceso de optimización. Este enfoque busca descubrir y explorar un “orden oculto”, un concepto ampliamente estudiado en computación evolutiva en el contexto del aprendizaje de dependencias (\textit{linkage learning}). Las dependencias entre variables son cruciales para el rendimiento de los algoritmos genéticos (GAs). Sin conocer estas dependencias, incluso problemas separables pueden ser exponencialmente difíciles para GAs simples, y su resolución puede requerir tamaños de población exponencialmente grandes para encontrar el óptimo global.
 
@@ -138,7 +138,7 @@ Para descubrir la estructura interna del problema, existen dos aproximaciones, l
 
 Tras haber establecido una clasificación, podemos observar que DG2 y ERDG pertenecen a la categoría de algoritmos explícitos, basados en diferencias finitas y automáticos.
 
-\subsection{Hibridación y Algoritmos Meméticos}
+\section{Hibridación y Algoritmos Meméticos}
 
 El teorema de No Free Lunch \cite{no_free_lunch} indica que ningún algoritmo de búsqueda puede superar consistentemente a todos los demás en todos los problemas posibles. La \textbf{hibridación} busca combinar las fortalezas de diferentes algoritmos para mejorar su rendimiento, la calidad de las soluciones y su integración en sistemas más amplios.
 
@@ -159,7 +159,7 @@ Integran búsqueda local dentro de un marco evolutivo global, balanceando explor
 Combina la descomposición de problemas con algoritmos meméticos. Los problemas se dividen en subproblemas optimizados con algoritmos globales seguidos de episodios de búsqueda local. 
 \end{itemize}
 
-\subsection{Operadores de Muestreo y Variación en DE y PSO}
+\section{Operadores de Muestreo y Variación en DE y PSO}
 
 Los operadores de muestreo y variación buscan mantener la diversidad en la población y mejorar la eficacia de los algoritmos en la exploración de grandes espacios de búsqueda. Dos enfoques comunes son:
 
