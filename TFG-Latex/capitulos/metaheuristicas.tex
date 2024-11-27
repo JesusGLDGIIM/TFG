@@ -3,11 +3,11 @@
 
 \chapter{Componentes de los algoritmos implementados}
 
-En esta sección explicaremos con mayor profundidad la evolución diferencial, idea básica de los algoritmos que implementaremos más adelante, además explicaremos el funcionamiento de los algoritmos de agrupamiento diferencial y exploraremos dos métodos de búsqueda local que luego se utilizarán en el algoritmo SHADE-ILS
+En este capitulo, explicaremos con mayor profundidad la evolución diferencial, idea básica de los algoritmos que implementaremos más adelante, además explicaremos el funcionamiento de los algoritmos de agrupamiento diferencial y exploraremos dos métodos de búsqueda local que luego se utilizarán en el algoritmo SHADE-ILS.
 
 \section{Evolución diferencial}
 
-Esta sección describe brevemente la Evolución Diferencial (DE). Similar a otros algoritmos evolutivos para la optimización numérica, una población de DE se representa como un conjunto de vectores de parámetros reales \( \mathbf{x}_i = (x_{1}, \ldots, x_{D}), i = 1, \ldots, N \), donde \( D \) es la dimensionalidad del problema objetivo y \( N \) es el tamaño de la población. 
+Esta sección describe brevemente la Evolución Diferencial (DE) \cite{DE}. Similar a otros algoritmos evolutivos para la optimización numérica, una población de DE se representa como un conjunto de vectores de parámetros reales \( \mathbf{x}_i = (x_{1}, \ldots, x_{D}), i = 1, \ldots, N \), donde \( D \) es la dimensionalidad del problema objetivo y \( N \) es el tamaño de la población. 
 
 Al comienzo de la búsqueda, los vectores individuales de la población se inicializan aleatoriamente. Luego, se repite un proceso de generación de vectores de prueba y selección hasta que se encuentra algún criterio de parada. En cada generación \( G \), se genera un vector mutado \( \mathbf{v}_{i,G} \) a partir de un miembro de la población existente \( \mathbf{x}_{i,G} \) aplicando alguna estrategia de mutación. A continuación se muestran ejemplos de estrategias de mutación:
 
@@ -59,7 +59,553 @@ Después de que se han generado todos los vectores de prueba \( \mathbf{u}_{i,G}
 
 \section{Búsqueda local}
 
-\section{Algoritmos de descomposición}
+Un algoritmo de búsqueda local es una técnica de optimización que busca soluciones óptimas o casi óptimas en un espacio de soluciones a partir de una solución inicial. A diferencia de los algoritmos de búsqueda global, que intentan explorar todo el espacio de soluciones, los algoritmos de búsqueda local se centran en explorar los "vecindarios" de una solución actual para mejorarla iterativamente. Estos algoritmos favorecen la explotación frente a la exploración, es decir, son buenos para encuentran óptimos cercanos, pero suelen explorar un entorno reducido del espacio, esto lo hace muy buenos en combinación con algoritmos como la evolución diferencial, que favorece la exploración y permite barrer un espacio más amplio de búsqueda. A continuación, explicaremos los dos algoritmos de bñusqueda local que utilizaremos en \textbf{SHADE-ILS}: \textit{L-BFGS-B} y \textit{MTS-LS1}.
+
+\subsection{L-BFGS-B}
+Es una variante del método L-BGFS \ref{alg:l-bfgs-formal} que permite trabajar con restricciones sencillas del tipo:
+\begin{equation}
+	a \leq x_i \leq b,
+\end{equation}
+
+El algoritmo se comporta igual salvo que cuando se genera un nuevo candidato a solución, se proyectan los valores fuera de rango dentro de los límites:
+
+\begin{equation}
+\begin{cases}
+    x_i = a, & \text{si } x_i \leq a, \\
+    x_i = b, & \text{si } x_i \geq b
+\end{cases}
+\end{equation}
+
+De esta forma nos aseguramos que no se buscan soluciones fuera de los límites. En la práctica, este algoritmo es bastante competente, ya que cuando tenemos información para acotar un problema de esta forma, es porque sabemos que el óptimo debe estar en algún lugar dentro de los límites pero no cerca del borde.
+
+\subsection{MTS-LS1}
+
+El \textit{Multiple Trajectory Search} (MTS) \cite{MTS_LS1} es un algoritmo diseñado para abordar problemas de optimización global a gran escala. MTS incorpora tres métodos de búsqueda local, y selecciona dinámicamente el que mejor se adapte al paisaje del vecindario de cada solución. Entre estos métodos, \textit{Local Search 1} (LS1) se utilizará en \textit{SHADE-ILS} como uno de los dos métodos de búsqueda local.
+
+\vspace{10px}
+
+El método \textit{Local Search 1} (MTS-LS1) se basa en una exploración unidimensional, buscando mejoras a lo largo de cada dimensión desde la primera hasta la última. Este método utiliza un rango de búsqueda ($SR$) que se ajusta dinámicamente. Si no se observa mejora en la solución durante la búsqueda, $SR$ se reduce a la mitad, y si llega a ser menor que $10^{-15}$, se restablece a un porcentaje fijo del rango inicial.
+
+Para cada dimensión, MTS-LS1 realiza los siguientes pasos:
+\begin{enumerate}
+	\item Se intenta reducir la coordenada actual en $SR$.
+	\item Si no mejora, se intenta aumentarla en $0.5 \cdot SR$.
+	\item Si ambas operaciones no generan mejoras, se restaura la solución original y se pasa a la siguiente dimensión.
+\end{enumerate}
+
+
+El pseudocódigo de MTS-LS1 se describe a continuación:
+
+\begin{algorithm}
+\caption{MTS-LS1}
+\begin{algorithmic}[1]
+\STATE // Fase de configuración inicial
+\IF {\textit{Improve[$k$]} $=$ \textbf{FALSE}}
+    \STATE $SR \gets SR / 2$;
+    \IF {$SR < 10^{-15}$}
+        \STATE $SR \gets (UPPER\_BOUND - LOWER\_BOUND) \cdot 0.4$;
+    \ENDIF
+\ENDIF
+\STATE \textit{Improve[$k$]} $\gets$ \textbf{FALSE};
+
+\STATE // Bucle de búsqueda local
+\FOR {$i = 1$ to $N$}
+    \STATE $X_k[i] \gets X_k[i] - SR$;
+    \IF {$X_k$ es mejor que la mejor solución actual}
+        \STATE $grade \gets grade + \text{BONUS1}$;
+        \STATE Actualizar mejor solución;
+    \ELSE
+        \STATE Restaurar $X_k[i]$ a su valor original;
+        \STATE $X_k[i] \gets X_k[i] + 0.5 \cdot SR$;
+        \IF {$X_k$ es mejor que la mejor solución actual}
+            \STATE $grade \gets grade + \text{BONUS1}$;
+            \STATE Actualizar mejor solución;
+        \ELSE
+            \STATE Restaurar $X_k[i]$ a su valor original;
+        \ENDIF
+    \ENDIF
+\ENDFOR
+
+\STATE \textbf{return} $grade$;
+\end{algorithmic}
+\end{algorithm}
+
+
+Este método es especialmente útil en paisajes de optimización donde una búsqueda exhaustiva en todas las dimensiones no es viable, permitiendo un ajuste fino y dinámico de las soluciones. Tiene la desventaja de ser muy sensible a rotaciones, un aumento de 0.5 en una dirección puede producir una gran mejora, sin embargo, si se realiza una rotación, es posible que ese mismo aumento de 0.5 en una dimensión produzca una mejora mucho menor.	
+
+
+\section{Técnicas de descomposición}
+En esta sección detallaremos dos técnicas de descomposición automática que usan agrupamiento diferencial: \textit{DG2} y \textit{ERDG}. 
+
+\subsection{DG}
+El algoritmo de agrupamiento diferencial \textit{DG} (por sus siglas en inglés: \textit{Differential grouping}) es una técnica de agrupamiento automático de variables. La idea principal de DG es:
+
+El teorema \ref{T1} nos dice que dos variables \(x_p\) y \(x_q\) interactúan si la ecuación \ref{EQ7} evaluada con dos valores diferentes de \(x_q\) produce resultados diferentes.
+
+Para abreviar, el lado izquierdo de la ecuación \ref{EQ6} se denota como \(\Delta_1\) y su lado derecho como \(\Delta_2\). Es claro que 
+
+\[
+\Delta_1 = \Delta_2 \iff |\Delta_1 - \Delta_2| = 0.
+\]
+
+También es evidente que esta comprobación de igualdad no es práctica en problemas reales que utilicen ordenadores, debido a la precisión limitada de los números de punto flotante. Por esta razón, la comprobación de igualdad puede ser convertida en una comprobación de desigualdad de la forma 
+
+\[
+\lambda = |\Delta_1 - \Delta_2| > \epsilon,
+\]
+
+introduciendo el parámetro de control \(\epsilon\), que determina la sensibilidad de \(DG\) a las interacciones. 
+
+El algoritmo \ref{alg:DG} se detalla el algoritmo DG, que muestra como podemos usar el teorema \ref{T1} para encontrar y agrupar las variables que interactúan:
+
+\begin{algorithm}
+\caption{Agrupación Diferencial (DG)}
+\label{alg:DG}
+\begin{algorithmic}[1]
+\STATE // Inicialización
+\STATE allgroups $\gets$ \{\};
+\STATE seps $\gets$ \{\};
+\STATE dims $\gets$ \{1, 2, \dots, n\};
+\FOR {i $\in$ dims}
+    \STATE group $\gets$ \{i\};
+    \FOR {j $\in$ dims $\land$ i $\neq$ j}
+        \STATE p1 $\gets$ lbound $\times$ ones(1, n);
+        \STATE p2 $\gets$ p1;
+        \STATE p2(i) $\gets$ ubound;
+        \STATE $\Delta_1 \gets$ func(p1) - func(p2);
+        \STATE p1(j) $\gets$ 0;
+        \STATE p2(j) $\gets$ 0;
+        \STATE $\Delta_2 \gets$ func(p1) - func(p2);
+        \IF {$|\Delta_1 - \Delta_2| > \epsilon$}
+            \STATE group $\gets$ group $\cup$ j;
+        \ENDIF
+    \ENDFOR
+    \STATE dims $\gets$ dims - group;
+    \IF {length(group) = 1}
+        \STATE seps $\gets$ seps $\cup$ group;
+    \ELSE
+        \STATE allgroups $\gets$ allgroups $\cup$ \{group\};
+    \ENDIF
+\ENDFOR
+\STATE allgroups $\gets$ allgroups $\cup$ \{seps\};
+\end{algorithmic}
+\end{algorithm}
+
+\subsubsection{Complejidad algorítmica}
+Ahora calcularemos una cota superior para el número total de evaluaciones de la función objetivo (FEs) requeridas por la agrupación diferencial, bajo la suposición de que existen \(n_m\) subcomponentes no separables, cada uno con \(m\) variables. Como se muestra en \ref{alg:DG} después de cada aplicación exitosa de la agrupación diferencial, \(m\) variables se eliminan del conjunto de variables de decisión restantes. Basándose en la suma de una progresión aritmética, una cota superior \(S\) para el número de veces que se ejecuta el bucle interno del \ref{alg:DG} se puede calcular como:
+
+\begin{align}
+    S &= (n - 1) + (n - m - 1) + \ldots + \left(n - (n_m - 1)m - 1\right) \nonumber \\
+    &= (n - 1) + (n - m - 1) + \ldots + (m - 1) \nonumber \\
+    &= \frac{n}{2m}(n + m - 2).
+\end{align}
+
+
+Dado que hay cuatro evaluaciones de la función objetivo en el bucle interno (líneas 10 y 13 de \ref{alg:DG}), una agrupación perfecta requerirá un total de \(4S\) evaluaciones de la función objetivo. Sin embargo, el algoritmo \ref{alg:DG} puede optimizarse aún más al notar que \(\Delta\) no cambia durante la ejecución del bucle interno y puede moverse fuera del mismo. Por lo tanto, el número total de evaluaciones de la funcion objetivo requeridas se reduce a \(2(S + n_m)\).
+
+La complejidad en tiempo de la agrupación diferencial con respecto al número máximo de evaluaciones de la función objetivo es:
+
+\[
+O(\text{FE}) = O\left(2(S + n_m)\right) = O\left(\frac{n^2}{m}\right).
+\]
+
+
+Dos desventajas principales de \(DG\) son su sensibilidad al parámetro \(\epsilon\) y su baja precisión para detectar variables interactivas en funciones con componentes superpuestas.
+
+\subsection{DG2}
+El algoritmo Differential Grouping 2 (DG2) \cite{DG2} es una versión mejorada del algoritmo Differential Grouping (DG) \cite{DG}, que trata de resolver los problemas de precisión y eficiencia presentes en su predecesor.
+
+El algoritmo DG2 se compone de tres partes principales:
+
+\begin{enumerate}
+\item \textbf{Construcción de la matriz de estructura de interacción}: Se genera una matriz que contiene el valor absoluto de las diferencias \( |\Delta_1 - \Delta_2| \) para todos los pares de variables. Este paso se realiza mediante la función \ref{alg:ISM}.
+
+\item \textbf{Definición de un parámetro de umbral}: Para convertir la matriz de estructura de interacción bruta $\Lambda$ en una matriz de estructura de diseño $\Theta$ para lo cua lse usa la función \ref{alg:DSM}, se introduce un umbral dinámico. La entrada \(\Theta_{ij}\) toma el valor 1 si \(\Lambda_{ij} > \epsilon\), y 0 en caso contrario. Este umbral es adaptativo y se basa en la magnitud de los valores de la función y la cantidad \(\lambda = |\Delta_1 - \Delta_2|\), mejorando la precisión en la detección de interacciones.
+
+\item \textbf{Agrupación de variables no separables}: Se identifican los componentes conectados de un grafo representado por la matriz de adyacencia \( \Delta \), descomponiendo las variables en grupos no separables.
+\end{enumerate}
+
+\begin{algorithm}
+\caption{DG2}
+\label{alg:DG2}
+\begin{algorithmic}[1]
+\STATE $(\Lambda, F, \hat{f}, f_{\text{base}}, \Gamma) \gets \text{ISM}(f, n, \overline{x}, \underline{x})$
+\STATE $\Theta \gets \text{DSM}(\Lambda, F, \hat{f}, f_{\text{base}}, n)$
+\STATE $(k, y_1, \dots, y_k) \gets \text{ConnComp}(\Delta)$
+\STATE $x_{\text{sep}} \gets \{\}$, $g \gets 0$
+\FOR{$i = 1$ \TO $k$}
+    \IF{$|y_i| = 1$}
+        \STATE $x_{\text{sep}} \gets x_{\text{sep}} \cup y_i$
+    \ELSE
+        \STATE $g \gets g + 1$, $x_g \gets y_i$
+    \ENDIF
+\ENDFOR
+\end{algorithmic}
+\end{algorithm}
+
+\subsubsection{Mejora en la eficiencia del agrupamiento diferencial}
+
+Para detectar funciones con componentes superpuestas, es necesario examinar todas las parejas de variables en busca de interacción. Para una función de \(n\) dimensiones, el número total de interacciones es \(\frac{n(n-1)}{2}\). Según el Teorema \ref{T1}, cada comparación requiere cuatro evaluaciones de la función objetivo, resultando en un total de:
+
+\[
+\text{Número total de evaluaciones} = 4 \cdot \frac{n(n-1)}{2} = 2n(n-1).
+\]
+
+Sin embargo, mediante una selección sistemática de puntos de muestra, el número total de evaluaciones de la función objetivo puede reducirse significativamente. Este proceso puede explicarse usando una función simple de tres variables de decisión, \(f(x_1, x_2, x_3)\).
+
+\vspace{10px}
+
+\textbf{Ejemplo para tres variables de decisión}
+
+\vspace{10px}
+
+El total de evaluaciones necesarias según el Teorema \ref{T1} es 12, pero solo se necesitan 7 puntos únicos debido a evaluaciones redundantes. A continuación, se detalla cómo se realizan estas evaluaciones:
+
+\begin{itemize}
+    \item Interacción \(x_1 \leftrightarrow x_2\):
+    \[
+    \Delta^{(1)} = f(a', b, c) - f(a, b, c), \quad \Delta^{(2)} = f(a', b', c) - f(a, b', c).
+    \]
+    \item Interacción \(x_1 \leftrightarrow x_3\):
+    \[
+    \Delta^{(1)} = f(a', b, c) - f(a, b, c), \quad \Delta^{(2)} = f(a', b, c') - f(a, b, c').
+    \]
+    \item Interacción \(x_2 \leftrightarrow x_3\):
+    \[
+    \Delta^{(1)} = f(a, b', c) - f(a, b, c), \quad \Delta^{(2)} = f(a, b', c') - f(a, b, c').
+    \]
+\end{itemize}
+
+Aquí, \(a\), \(b\), y \(c\) son los valores asignados a \(x_1\), \(x_2\) y \(x_3\), respectivamente. Además, \(a' = x_1 + \delta\), \(b' = x_2 + \delta\), y \(c' = x_3 + \delta\).
+
+\vspace{10px}
+\textbf{Patrón general de evaluaciones}
+\vspace{10px}
+
+Para calcular \(\Delta^{(1)}\) y \(\Delta^{(2)}\), se requieren cuatro puntos, que se seleccionan de manera que formen un rectángulo en el espacio de búsqueda. Por ejemplo, para calcular \(\Delta^{(1)}\) se necesita un punto base, que en este caso es \((a, b, c)\). Luego, para encontrar las interacciones con \(x_1\), esta variable se modifica, obteniendo el segundo punto como \((a', b, c)\). Para encontrar la interacción entre \(x_1\) y \(x_2\), se evalúa \(\Delta^{(1)}\) con un valor diferente de \(x_2\), resultando en los puntos \((a', b', c)\) y \((a, b', c)\).
+
+\vspace{10px}
+
+Siguiendo este patrón para todas las interacciones, se observa que:
+\begin{itemize}
+    \item El punto base \((a, b, c)\) se repite exactamente tres veces.
+    \item Los casos donde solo una dimensión varía respecto al punto base, como \((a', b, c)\), \((a, b', c)\) y \((a, b, c')\), se repiten exactamente dos veces.
+    \item Los casos donde dos dimensiones varían respecto al punto base, como \((a', b', c)\), \((a', b, c')\) y \((a, b', c')\), se evalúan solo una vez.
+\end{itemize}
+
+\vspace{20px}
+\textbf{Generalización para \(n\) variables}
+\vspace{10px}
+
+En el caso general, para detectar la interacción entre las dimensiones \(i\) y \(j\), las evaluaciones necesarias son:
+\[
+x_i \leftrightarrow x_j : 
+\begin{cases}
+\Delta^{(1)} = f(\ldots, x_i', \ldots) - f(x_1, \ldots, x_n), \\
+\Delta^{(2)} = f(\ldots, x_i', \ldots, x_j', \ldots) - f(\ldots, x_j', \ldots).
+\end{cases}
+\]
+
+El número total de evaluaciones necesarias es \(2n(n-1)\). Sin embargo, el número de evaluaciones únicas es menor debido a redundancias:
+\begin{itemize}
+    \item Evaluaciones redundantes del punto base: \(\frac{n(n-1)}{2} - 1\).
+    \item Evaluaciones redundantes donde solo una dimensión varía: \(n(n-2)\).
+\end{itemize}
+
+Por lo tanto, el número total de evaluaciones únicas se calcula como:
+\[
+\text{Evaluaciones únicas} = \frac{n(n+1)}{2} + 1.
+\]
+
+Esto se logra eliminando evaluaciones redundantes, como aquellas en las que un punto de base se repite varias veces. El algoritmo \ref{alg:ISM} representa el proceso descrito anteriormente.
+
+\subsubsection{Mejora en la precisión del agrupamiento}
+
+La precisión del agrupamiento en DG depende del parámetro \(\epsilon\). Teóricamente, \(\epsilon\) podría establecerse en cero, ya que cualquier diferencia positiva entre \(\Lambda_1\) y \(\Lambda_2\) indica interacción entre variables. Sin embargo, en la práctica, las operaciones en punto flotante introducen errores de redondeo, lo que genera valores \(\lambda\) no nulos incluso para variables separables.
+
+Para abordar este problema, DG2 estima un límite inferior (\(e_{\text{inf}}\)) y un límite superior (\(e_{\text{sup}}\)) para el error de redondeo. Estos valores se calculan individualmente para cada par de variables, basándose en información disponible como los valores de la función y la cantidad \(\lambda\). Dos variables se consideran interactivas si \(\lambda > e_{\text{sup}}\) y separables si \(\lambda < e_{\text{inf}}\). Este intervalo define una región segura para distinguir valores genuinamente nulos de valores no nulos en \(\lambda\).
+
+El método de cálculo del umbral se basa en el error de redondeo en operaciones en punto flotante. Este error puede representarse como:
+
+\[
+\text{fl}(x) = x(1+\delta) = x + \delta x,
+\]
+
+donde \(\delta\) está acotado por una constante dependiente de la máquina, llamada épsilon de la máquina (\(\mu_M\)), tal que \(|\delta| < \mu_M\). Este enfoque asegura que los límites \(e_{\text{inf}}\) y \(e_{\text{sup}}\) sean precisos, maximizando la detección de interacciones genuinas. Este procedimiento es utilizado en \ref{alg:DSM} para calcular la matriz de estructura de diseño.
+
+\begin{algorithm}[H]
+\caption{ISM: Cálculo de la matriz de estructura de interacción}
+\label{alg:ISM}
+\begin{algorithmic}[1]
+\STATE $\Lambda \gets 0_{n \times n}$
+\STATE $F^{n \times n} \gets \text{NaN}^{n \times n}$ \COMMENT{Matriz inicializada con valores NaN}
+\STATE $\hat{f}^{n \times 1} \gets \text{NaN}^{n \times 1}$ \COMMENT{Vector inicializado con valores NaN}
+\STATE $x^{(1)} \gets \underline{x}$, $f_{\text{base}} \gets f(x^{(1)})$, $\Gamma \gets 1$
+\STATE $m \gets \frac{1}{2}(\underline{x} + \overline{x})$
+\FOR{$i = 1 \to n - 1$}
+    \IF{$\neg \text{isnan}(\hat{f}_i)$}
+        \STATE $x^{(2)} \gets x^{(1)}$, $x^{(2)}_i \gets m_i$
+        \STATE $\hat{f}_i \gets f(x^{(2)})$, $\Gamma \gets \Gamma + 1$
+        \FOR{$j = i + 1 \to n$}
+            \IF{$\neg \text{isnan}(\hat{f}_i)$}
+                \STATE $x^{(3)} \gets x^{(1)}$, $x^{(3)}_j \gets m_j$
+                \STATE $\hat{f}_j \gets f(x^{(3)})$, $\Gamma \gets \Gamma + 1$
+                \STATE $x^{(4)} \gets x^{(1)}$, $x^{(4)}_i \gets m_i$, $x^{(4)}_j \gets m_j$
+                \STATE $F_{ij} \gets f(x^{(4)})$, $\Gamma \gets \Gamma + 1$
+                \STATE $\Delta^{(1)} \gets \hat{f}_i - f(x^{(1)})$
+                \STATE $\Delta^{(2)} \gets F_{ij} - \hat{f}_j$
+                \STATE $\Lambda{ij} \gets |\Delta^{(1)} - \Delta^{(2)}|$
+            \ENDIF
+        \ENDFOR
+    \ENDIF
+\ENDFOR
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{DSM: Cálculo de la matriz de estructura de diseño}
+\label{alg:DSM}
+\begin{algorithmic}[1]
+\STATE $\Theta \gets \text{NaN}^{n \times n}$
+\STATE $\eta_1 \gets 0$, $\eta_2 \gets 0$
+\FOR{$i = 1 \to n - 1$}
+    \FOR{$j = i + 1 \to n$}
+        \STATE $f_{\text{max}} \gets \max\{f_{\text{base}}, F_{ij}, \hat{f}_i, \hat{f}_j\}$
+        \STATE $e_{\text{inf}} \gets \gamma_2 \cdot \max\{f_{\text{base}} + F_{ij}, \hat{f}_i + \hat{f}_j\}$
+        \STATE $e_{\text{sup}} \gets \gamma \sqrt{n} \cdot f_{\text{max}}$
+        \IF{$\Lambda_{ij} < e_{\text{inf}}$}
+            \STATE $\Delta_{i,j} \gets 0$, $\eta_0 \gets \eta_0 + 1$
+        \ELSIF{$\Lambda_{ij} > e_{\text{sup}}$}
+            \STATE $\Theta_{i,j} \gets 1$, $\eta_1 \gets \eta_1 + 1$
+        \ENDIF
+    \ENDFOR
+\ENDFOR
+\FOR{$i = 1 \to n - 1$}
+    \FOR{$j = i + 1 \to n$}
+        \STATE $f_{\text{max}} \gets \max\{f_{\text{base}}, F_{ij}, \hat{f}_i, \hat{f}_j\}$
+        \STATE $e_{\text{inf}} \gets \gamma_2 \cdot \max\{f_{\text{base}} + F_{ij}, \hat{f}_i + \hat{f}_j\}$
+        \STATE $e_{\text{sup}} \gets \gamma \sqrt{n} \cdot f_{\text{max}}$
+        \IF{$\Theta_{i,j} \neq \text{NaN}$}
+            \STATE $\epsilon \gets \frac{\eta_0}{\eta_0 + \eta_1} \cdot e_{\text{inf}} + \frac{\eta_1}{\eta_0 + \eta_1} \cdot e_{\text{sup}}$
+            \IF{$\Lambda_{ij} > \epsilon$}
+                \STATE $\Theta_{i,j} \gets 1$
+            \ELSE
+                \STATE $\Theta_{i,j} \gets 0$
+            \ENDIF
+        \ENDIF
+    \ENDFOR
+\ENDFOR
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{RDG}
+Presentamos ahora una técnica de agrupamiento diferencial automático recursiva \textit{RDG} (Recursive Differential Grouping) \cite{RDG}. Esta técnica utiliza el corolario \ref{C1} para identificar la interacción entre dos conjuntos de variables \(X_1\) y \(X_2\) mediante el siguiente procedimiento:
+
+\begin{enumerate}
+    \item Establecer todas las variables de decisión en los límites inferiores (\(lb\)) del espacio de búsqueda (\(x_{l,l}\)).
+    \item Alterar las variables de decisión \(X_1\) de \(x_{l,l}\), cambiándolas de los límites inferiores a los superiores (\(ub\)), denotado por \(x_{u,l}\).
+    \item Calcular la diferencia de aptitud (\(\delta_1\)) entre \(x_{l,l}\) y \(x_{u,l}\).
+    \item Alterar las variables de decisión \(X_2\) de \(x_{l,l}\) y \(x_{u,l}\), llevándolas al punto medio entre los límites inferiores y superiores, denotados por \(x_{l,m}\) y \(x_{u,m}\), respectivamente.
+    \item Calcular la diferencia de aptitud (\(\delta_2\)) entre \(x_{l,m}\) y \(x_{u,m}\).
+    \item Si la diferencia entre \(\delta_1\) y \(\delta_2\) es mayor que un umbral \(\epsilon\), entonces existe interacción entre \(X_1\) y \(X_2\).
+\end{enumerate}
+
+Los subíndices de \(x\) indican los valores de \(X_1\) y \(X_2\): "l" significa límites inferiores, "u" límites superiores, y "m" el punto medio entre ellos. El umbral \(\epsilon\) se estima en función de la magnitud del espacio objetivo:
+
+\[
+\epsilon = \alpha \cdot \min\{|f(x_1)|, \ldots, |f(x_k)|\},
+\]
+
+donde \(x_1, \ldots, x_k\) son \(k\) soluciones candidatas generadas aleatoriamente, y \(\alpha\) es un coeficiente de control.
+
+\subsubsection{Funcionamiento del método RDG}
+El método RDG comienza identificando la interacción entre la primera variable de decisión \(x_1\) y el resto de las variables. Si no se detecta interacción, \(x_1\) se coloca en el grupo de variables separables y el algoritmo pasa a la siguiente variable, \(x_2\). Si se detecta interacción, las variables restantes se dividen en dos grupos de tamaño casi igual, \(G_1\) y \(G_2\). Luego, se examina recursivamente la interacción entre \(x_1\) y \(G_1\), y entre \(x_1\) y \(G_2\). Este proceso continúa hasta identificar todas las variables de decisión que interactúan con \(x_1\), que se colocan en el subconjunto de variables de decisión \(X_1\) junto con \(x_1\).
+
+Posteriormente, se examina la interacción entre \(X_1\) y las variables restantes (excluyendo las variables en \(X_1\)) para identificar las variables que interactúan condicionalmente con \(x_1\). Si se detecta interacción, estas variables también se añaden a \(X_1\). Este proceso se repite hasta que no se detecten más interacciones. Finalmente, las variables en \(X_1\) se colocan en un grupo no separable. El método RDG pasa a la siguiente variable no agrupada y repite el proceso hasta que todas las variables de decisión estén agrupadas. El algoritmo devuelve los grupos de variables separables (\(seps\)) y no separables (\(nonseps\)) como salida.
+
+\subsubsection{Complejidad computacional} 
+La complejidad computacional del método RDG para descomponer un problema de \(n\) dimensiones depende de la naturaleza del problema:
+
+\begin{enumerate}
+\item \textbf{Problema totalmente separable:} La complejidad es \(\mathcal{O}(n)\). Para cada variable de decisión, se utilizan tres evaluaciones de la función objetivo (FEs) para determinar su separabilidad, requiriendo un total de aproximadamente \(3n\) FEs.
+\item \textbf{Problema totalmente no separable:} La complejidad es \(\mathcal{O}(n)\). Al agrupar \(n\) variables interactivas, la función \texttt{INTERACT} se ejecuta aproximadamente \(\sum_{i=0}^{k}(n/2^i)\) veces, donde \(k = \log_2(n)\). Esto equivale a menos de \(2n\) iteraciones, cada una requiriendo tres FEs, para un total de aproximadamente \(6n\) FEs.
+\item \textbf{Problema parcialmente separable con \(n/m\) subcomponentes:} La complejidad es \(\mathcal{O}(n \log(n))\). Al agrupar \(m\) variables interactivas en un subcomponente, la función \texttt{INTERACT} se ejecuta menos de \(2m \cdot \log_2(n)\) veces. Con \(n/m\) subcomponentes, el total es inferior a \(6n \log_2(n)\) FEs.
+\item \textbf{Problema con un subcomponente no separable de \(m\) dimensiones:} La complejidad es \(\mathcal{O}(\max\{n, m \log(n)\})\). Se necesitan \(3(n-m)\) FEs para identificar las variables separables y menos de \(6m \cdot \log_2(n)\) FEs para identificar las \(m\) variables interactivas.
+\item \textbf{Problema con solapamiento:} La complejidad es \(\mathcal{O}(n \log(n))\). Para identificar dos variables que interactúan con \(x_1\), se requieren aproximadamente \(12 \log_2(n)\) FEs. Esto se repite para cada conjunto interactivo, resultando en un total aproximado de \(6n \log_2(n)\) FEs.
+\end{enumerate}
+
+\begin{algorithm}[H]
+\caption{RDG}
+\label{alg:RDG}
+\begin{algorithmic}[1]
+\REQUIRE $f$, $ub$, $lb$, $\epsilon$
+\STATE Inicializar $seps$ y $nonseps$ como grupos vacíos.
+\STATE Establecer todas las variables en los límites inferiores: $x_{l,l} = lb$.
+\STATE Calcular la aptitud: $y_{l,l} = f(x_{l,l})$.
+\STATE Asignar la primera variable $x_1$ al subconjunto $X_1$.
+\STATE Asignar el resto de las variables al subconjunto $X_2$.
+\WHILE{$X_2$ no esté vacío}
+    \STATE $X^*_1 \gets \texttt{INTERACT}(X_1, X_2, x_{l,l}, y_{l,l}, \epsilon)$.
+    \IF{$X^*_1$ es igual a $X_1$}
+        \IF{$X_1$ contiene una sola variable}
+            \STATE Añadir $X_1$ a $seps$.
+        \ELSE
+            \STATE Añadir $X_1$ a $nonseps$.
+        \ENDIF
+        \STATE Vaciar $X_1$ y $X^*_1$.
+        \STATE Asignar la primera variable de $X_2$ a $X_1$.
+        \STATE Eliminar la primera variable de $X_2$.
+    \ELSE
+        \STATE $X_1 \gets X^*_1$.
+        \STATE Eliminar las variables de $X_1$ de $X_2$.
+    \ENDIF
+\ENDWHILE
+\RETURN $seps$, $nonseps$.
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{INTERACT: Determinación de la interacción entre subconjuntos de variables}
+\label{alg:INTERACT}
+\begin{algorithmic}[1]
+\REQUIRE $X_1$, $X_2$, $x_{l,l}$, $y_{l,l}$, $\epsilon$
+\STATE $x_{u,l} \gets x_{l,l}$
+\STATE $x_{u,l}(X_1) \gets ub(X_1)$ \COMMENT{Configurar $X_1$ en los límites superiores}
+\STATE Calcular el cambio de aptitud: $\delta_1 \gets y_{l,l} - f(x_{u,l})$
+\STATE $x_{l,m} \gets x_{l,l}$
+\STATE $x_{l,m}(X_2) \gets (lb(X_2) + ub(X_2)) / 2$
+\STATE $x_{u,m} \gets x_{u,l}$
+\STATE $x_{u,m}(X_2) \gets (lb(X_2) + ub(X_2)) / 2$
+\STATE Calcular el cambio de aptitud: $\delta_2 \gets f(x_{l,m}) - f(x_{u,m})$
+\IF{$|\delta_1 - \delta_2| > \epsilon$}
+    \IF{$X_2$ contiene una sola variable}
+        \STATE $X_1 \gets X_1 \cup X_2$
+    \ELSE
+        \STATE Dividir $X_2$ en dos grupos de tamaño similar: $G_1$, $G_2$
+        \STATE $X^1_1 \gets \texttt{INTERACT}(X_1, G_1, x_{l,l}, y_{l,l}, \epsilon)$
+        \STATE $X^2_1 \gets \texttt{INTERACT}(X_1, G_2, x_{l,l}, y_{l,l}, \epsilon)$
+        \STATE $X_1 \gets X^1_1 \cup X^2_1$
+    \ENDIF
+\ENDIF
+\RETURN $X_1$
+\end{algorithmic}
+\end{algorithm}
+
+
+\subsection{ERDG}
+Efficient Recursive Differential Grouping \textit{ERDG} \cite{ERDG} es una versión más eficiente de RDG. A continuación, analizaremos RDG para ver cómo ERDG puede reducir el número de evaluaciones en casi todos los casos, resultando en una versión más eficiente.
+
+\subsubsection{Análisis de RDG}
+Supongamos que \(X_1\) y \(X_2\) son dos subconjuntos de variables mutuamente excluyentes. Según el Corolario \ref{C1}, para examinar la interrelación entre \(X_1\) y \(X_2\), RDG calcula \(\Delta_1\) y \(\Delta_2\) de la siguiente manera:
+
+\[
+\Delta_1 = f(x^* + l_1 u_1 + l_2 (u_3 + u_4)) - f(x^* + l_2 (u_3 + u_4)),
+\]
+
+\[
+\Delta_2 = f(x^* + l_1 u_1) - f(x^*).
+\]
+
+Si \(X_1\) se relaciona con \(X_2\), RDG divide \(X_2\) en dos subconjuntos de tamaño igual y mutuamente excluyentes, \(X_3\) y \(X_4\). Para examinar la interrelación entre \(X_1\) y \(X_3\), RDG calcula \(\Delta_1'\) y \(\Delta_2'\) como sigue:
+
+\[
+\Delta_1' = f(x^* + l_1 u_1 + l_2 u_3) - f(x^* + l_2 u_3), \quad \Delta_2' = \Delta_2.
+\]
+
+Asimismo, para examinar la interrelación entre \(X_1\) y \(X_4\), RDG calcula \(\Delta_1''\) y \(\Delta_2''\) como sigue:
+
+\[
+\Delta_1'' = f(x^* + l_1 u_1 + l_2 u_4) - f(x^* + l_2 u_4), \quad \Delta_2'' = \Delta_2.
+\]
+
+Dado que \(X_2 = X_3 \cup X_4\), puede existir asociación entre estos análisis de interrelación. Según la Proposición \ref{P2}, basándonos en los análisis de interrelación previos (es decir, \(\Delta_1 - \Delta_2\) y \(\Delta_1' - \Delta_2'\)), podemos determinar la interrelación entre \(X_1\) y \(X_4\) sin necesidad de calcular \(\Delta_1''\). Esto reduce el costo computacional en la exploración de interrelaciones.
+
+\subsubsection{Reducción del costo computacional}
+Durante la búsqueda binaria de RDG, la interrelación entre \(X_1\) y los subconjuntos \(X_3\) y \(X_4\) puede categorizarse en tres casos:
+
+\begin{enumerate}
+	\item \(X_1\) se relaciona con \(X_3\), pero no con \(X_4\): \((\Delta_1 - \Delta_2) = (\Delta_1' - \Delta_2')\).
+	\item \(X_1\) no se relaciona con \(X_3\), pero sí con \(X_4\): \((\Delta_1 - \Delta_2) \neq (\Delta_1' - \Delta_2')\).
+	\item \(X_1\) se relaciona con \(X_3\) y \(X_4\): \((\Delta_1 - \Delta_2) = (\Delta_1' - \Delta_2')\).
+\end{enumerate}
+
+En el primer caso, según la Proposición \ref{P2}, podemos determinar que \(X_1\) no se relaciona con \(X_4\) y evitar el cálculo de \(\Delta_1''\). Esta rama de búsqueda se descarta. En los casos segundo y tercero, RDG continúa la búsqueda binaria de interrelaciones dividiendo \(X_4\) en dos subconjuntos iguales \(X_5\) y \(X_6\). En estas evaluaciones posteriores, el valor de \(\Delta_1''\) puede reutilizarse para ahorrar costo computacional.
+
+\subsubsection{Algoritmo ERDG}
+\begin{algorithm}
+\caption{ERDG}
+\label{alg:ERDG}
+\begin{algorithmic}[1]
+\REQUIRE $f$, $ub$, $lb$
+\STATE Inicializar $sep$ y $nonsep$ como conjuntos vacíos.
+\STATE $x_{l,l} \gets lb$, $y_{l,l} \gets f(x_{l,l})$.
+\STATE $X_1 \gets \{x_1\}$, $X_2 \gets \{x_2, \ldots, x_D\}$.
+\WHILE{$X_2 \neq \emptyset$}
+    \STATE $x_{u,l} \gets x_{l,l}$, $x_{u,l}(X_1) \gets ub(X_1)$.
+    \STATE $y_{u,l} \gets f(x_{u,l})$, $F \gets \{y_{l,l}, y_{u,l}, \text{NaN}, \text{NaN}\}$.
+    \STATE $(X_1^*, \hat{\beta}) \gets \texttt{INTERACT}(X_1, X_2, x_{l,l}, x_{u,l}, ub, lb, F)$.
+    \IF{$|X_1^*| = |X_1|$}
+        \IF{$|X_1^*| > 1$}
+            \STATE $nonsep \gets nonsep \cup \{X_1^*\}$.
+        \ELSE
+            \STATE $sep \gets sep \cup X_1^*$.
+        \ENDIF
+        \STATE $X_1 \gets \{x\}$, $X_2 \gets X_2 \setminus \{x\}$, donde $x$ es la primera variable en $X_2$.
+    \ELSE
+        \STATE $X_1 \gets X_1^*$, $X_2 \gets X_2 \setminus X_1^*$.
+    \ENDIF
+    \IF{$X_2 = \emptyset$}
+        \IF{$|X_1| > 1$}
+            \STATE $nonsep \gets nonsep \cup \{X_1\}$.
+        \ELSE
+            \STATE $sep \gets sep \cup X_1$.
+        \ENDIF
+    \ENDIF
+\ENDWHILE
+\RETURN $sep$, $nonsep$.
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+\caption{INTERACT}
+\label{alg:INTERACT_ERDG}
+\begin{algorithmic}[1]
+\REQUIRE $X_1$, $X_2$, $x_{l,l}$, $x_{u,l}$, $ub$, $lb$, $F$
+\STATE Sea $F = \{F_1, F_2, F_3, F_4\}$.
+\STATE $nonSep \gets 1$
+\IF{$F_3 = \text{NaN}$}
+    \STATE $x_{m,l} \gets x_{l,l}$; $x_{m,l}(X_2) \gets \frac{lb(X_2) + ub(X_2)}{2}$
+    \STATE $x_{u,m} \gets x_{u,l}$; $x_{u,m}(X_2) \gets \frac{lb(X_2) + ub(X_2)}{2}$
+    \STATE $F_3 \gets f(x_{m,l})$; $F_4 \gets f(x_{u,m})$
+    \STATE $\Delta_1 \gets (F_1 - F_2)$; $\Delta_2 \gets (F_3 - F_4)$; $\beta \gets (\Delta_1 - \Delta_2)$
+    \IF{$|\beta| \leq \epsilon$}
+        \STATE $nonSep \gets 0$
+    \ENDIF
+\ENDIF
+\IF{$nonSep = 1$}
+    \IF{$|X_2| > 1$}
+        \STATE Divide $X_2$ en subconjuntos $X'_2$ y $X''_2$ de tamaño igual y mutuamente exclusivos.
+        \STATE $(X'_1, \hat{\beta}) \gets \texttt{INTERACT}(X_1, X'_2, x_{l,l}, x_{u,l}, ub, lb, \{F_1, F_2, \text{NaN}, \text{NaN}\})$
+        \IF{$\beta \neq \hat{\beta}$}
+            \STATE $X_1 \gets X'_1$
+        \ELSE
+            \IF{$|X'_1| = |X_1|$}
+                \STATE $(X''_1, \beta') \gets \texttt{INTERACT}(X_1, X''_2, x_{l,l}, x_{u,l}, ub, lb, F)$
+            \ELSE
+                \STATE $(X''_1, \beta') \gets \texttt{INTERACT}(X_1, X''_2, x_{l,l}, x_{u,l}, ub, lb, \{F_1, F_2, \text{NaN}, \text{NaN}\})$
+            \ENDIF
+            \STATE $X_1 \gets X'_1 \cup X''_1$
+        \ENDIF
+    \ELSE
+        \STATE $X_1 \gets X_1 \cup X_2$
+    \ENDIF
+\ENDIF
+\RETURN $X_1$, $\beta$
+\end{algorithmic}
+\end{algorithm}
+
+
+
 
 \endinput
 %--------------------------------------------------------------------

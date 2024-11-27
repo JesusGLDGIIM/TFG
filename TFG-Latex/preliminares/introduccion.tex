@@ -143,10 +143,10 @@ Tras haber establecido una clasificación, podemos observar que DG2 y ERDG perte
 El teorema de No Free Lunch \cite{no_free_lunch} indica que ningún algoritmo de búsqueda puede superar consistentemente a todos los demás en todos los problemas posibles. La \textbf{hibridación} busca combinar las fortalezas de diferentes algoritmos para mejorar su rendimiento, la calidad de las soluciones y su integración en sistemas más amplios.
 
 \begin{itemize}
-\item{Algoritmos de Búsqueda Local Híbrida}
+\item \textit{Algoritmos de Búsqueda Local Híbrida:}
 Estos algoritmos se basan únicamente en búsqueda local sin un componente global explícito. Por ejemplo, el \textit{Multiple Trajectory Search} (MTS) emplea tres métodos de búsqueda local, seleccionando el mejor para optimizar en vecindades específicas. Este enfoque ha demostrado eficacia en problemas de hasta 1000 dimensiones.
 
-\item{Algoritmos Meméticos}
+\item \textit{Algoritmos Meméticos:}
 Integran búsqueda local dentro de un marco evolutivo global, balanceando exploración y explotación. Son populares en la optimización de gran escala, destacándose en competiciones de LSGO. Un ejemplo es el algoritmo SHADE-ILS, que utilizaremos en nuestra propuesta. Los principales aspectos de diseño incluyen:
 \begin{itemize}
     \item \textbf{Frecuencia de búsqueda local:} Puede ser fija, adaptativa o probabilística.
@@ -155,7 +155,7 @@ Integran búsqueda local dentro de un marco evolutivo global, balanceando explor
     \item \textbf{Procedimientos de búsqueda local:} Amplia variedad, incluyendo métodos como MTS-LS, L-BFGS-B.
 \end{itemize}
 
-\item{Hibridación Coevolutiva}
+\item \textit{Hibridación Coevolutiva}
 Combina la descomposición de problemas con algoritmos meméticos. Los problemas se dividen en subproblemas optimizados con algoritmos globales seguidos de episodios de búsqueda local. 
 \end{itemize}
 

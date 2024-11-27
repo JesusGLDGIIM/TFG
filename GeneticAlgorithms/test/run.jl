@@ -125,7 +125,7 @@ function evaluate_shade(NP, runs, maxevals, H, func_num)
 end
 
 # Función para evaluar el algoritmo
-function evaluate_ERDGshadeils(NP, runs, evals, func_num)
+function evaluate_ERDGshadeils(NP, runs, evals, func_num)   
     lb, ub = get_bounds(func_num)
 
     D = 1000  # Dimensión del problema

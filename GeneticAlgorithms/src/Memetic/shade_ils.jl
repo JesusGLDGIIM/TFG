@@ -194,7 +194,7 @@ function shadeils(fitness_fun, funinfo, dim, evals, initial_eval, groups, popsiz
         for g in 1:num_groups
             group = groups[g]
 
-            factor = length(group)/dim*10
+            factor = 1#length(group)/dim*10
             if num_groups == 1
                 factor = 1
             end
