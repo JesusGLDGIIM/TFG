@@ -177,8 +177,7 @@ En este apartado, presentamos el algoritmo SHADE-ILS, expuesto por primera vez e
 \STATE \textbf{Algoritmo 1: SHADE-ILS}
 \STATE población $\leftarrow$ \text{random}(dim, tamaño\_población)
 \STATE solución\_inicial $\leftarrow$ (superior + inferior)/2
-\STATE actual\_mejor $\leftarrow$ BL(solución\_inicial)
-\STATE mejor\_solución $\leftarrow$ actual\_mejor
+\STATE mejor\_solución $\leftarrow$ solución\_inicial
 \WHILE {evaluaciones\_totales < evaluaciones\_máximas}
     \STATE previo $\leftarrow$ actual\_mejor.fitness
     \STATE actual\_mejor $\leftarrow$ SHADE(población, actual\_mejor)
@@ -232,6 +231,64 @@ El mecanismo de reinicio que se propone en \citep{Molina2018} consiste en reinic
     \item Los parámetros adaptativos de los métodos de BL se reinician a sus valores por defecto.
 \end{itemize}
 
+\section{Cooperative Coevolution}
+
+Cooperative Coevolution (CC) o coevolución cooperativa \cite{CC_orig} es un framework diseñado para abordar problemas de optimización global que presentan una naturaleza modular o separable. Su principal objetivo es dividir el problema original en subcomponentes más pequeños y manejables, permitiendo que cada uno sea optimizado de forma independiente por subpoblaciones especializadas. El pseucódigo de CC se puede encontrar en \ref{CC}.
+
+\begin{algorithm}
+\caption{Cooperative Coevolution (CC)}
+\label{CC}
+\begin{algorithmic}[1]
+\STATE \textbf{Algoritmo 1: Cooperative Coevolution}
+\STATE Dividir el problema en \(K\) subcomponentes: \(S = \{S_1, S_2, \ldots, S_K\}\).
+\STATE Inicializar una subpoblación \(P_k\) de tamaño \(N\) para cada subcomponente \(S_k\) aleatoriamente.
+\STATE Evaluar la aptitud inicial de cada individuo en cada subpoblación:
+\FOR {cada subcomponente \(S_k\)}
+    \FOR {cada individuo \(p_{k,i} \in P_k\)}
+        \STATE Completar la solución \(x\) usando valores representativos para las variables no pertenecientes a \(S_k\).
+        \STATE Evaluar \(f(x)\) para obtener la aptitud del individuo \(p_{k,i}\).
+    \ENDFOR
+\ENDFOR
+\WHILE {no se alcance el criterio de parada}
+    \FOR {cada subcomponente \(S_k\)}
+        \STATE Usar un algoritmo evolutivo (por ejemplo, DE) para evolucionar \(P_k\).
+        \STATE Evaluar la aptitud de los nuevos individuos en \(P_k\):
+        \FOR {cada nuevo individuo \(p_{k,i} \in P_k\)}
+            \STATE Completar la solución \(x\) usando los mejores valores actuales de las otras subpoblaciones.
+            \STATE Evaluar \(f(x)\) para obtener la aptitud del nuevo individuo.
+        \ENDFOR
+        \STATE Actualizar \(P_k\) con los nuevos individuos.
+    \ENDFOR
+\ENDWHILE
+\STATE Retornar la mejor solución encontrada \(x^*\).
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{DE-CC}
+Uno de los optimizadores más usados junto con Cooperative Coevolution es la Evolución Diferencial (DE) debido a su sencillez y adaptabilidad. Esta técnica fue introducida en \cite{DECC}. Una visión del algoritmo se puede ver en \ref{alg:DECC}.
+
+\begin{algorithm}
+\caption{Cooperative Coevolution con DE}
+\label{alg:DECC}
+\begin{algorithmic}[1]
+\STATE \(gen \leftarrow 0\)
+\FOR {cada subcomponente \(S\)}
+    \STATE \(Population_S(gen) \leftarrow\) población inicializada aleatoriamente
+    \STATE Evaluar la aptitud de cada individuo en \(Population_S(gen)\)
+\ENDFOR
+\WHILE {no se alcance el criterio de parada}
+    \STATE \(gen \leftarrow gen + 1\)
+    \FOR {cada subcomponente \(S\)}
+        \STATE Seleccionar \(Representative_S(gen)\) de \(Population_S(gen-1)\) basado en la aptitud
+    \ENDFOR
+    \FOR {cada subcomponente \(S\)}
+        \STATE Aplicar los operadores de mutación, recombinación y selección de DE a \(Population_S(gen)\)
+        \STATE Evaluar la aptitud de cada individuo en \(Population_S(gen)\) usando \(Representative_S(gen)\)
+    \ENDFOR
+\ENDWHILE
+\STATE Retornar la mejor solución encontrada.
+\end{algorithmic}
+\end{algorithm}
 
 \endinput
 %--------------------------------------------------------------------

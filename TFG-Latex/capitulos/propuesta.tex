@@ -3,9 +3,58 @@
 
 \chapter{Propuesta}
 
+Una vez explicados todos los componentes con el que crearemos nuestras propuestas, procedemos a explicar los algoritmos que utilizaremos para comprobar si el agrupameinto de variables es útil fuera del amrco de CC especialemente si es efectiva al combinarla con aquellos algoritmos diseñados para la alta dimensionalidad.
+
 \section{ERDG-SHADE}
 
+Para poder comparar si es más efectivo incorporar la búsqueda local o el agrupamiento de variables, se propone el algoritmo ERDG-SHADE. Al igual que la evolución diferencial, SHADE se integra fácilmente con el agrupamiento de varibles, permitiendo una fácil adaptación del código a la optimización por grupos. Para ello, inicialmnte se obtienen los grupos aplicando algúna técnica de descomposición, en este caso ERDG y luego se aplica SHADE a cada grupo. Para dividir el número de evaluaciones que se ejecuta cada grupo, se ha optado por asignar proporcionalmente el numero de evaluaciones al tamaño del grupo, ejecutando cada grupo la cantidad proporcional a su tamaño. La única diferencia con SHADE original es en la linea 15 que al generar el vector de prueba, solo se utilizan los subíndices del grupo. El pseudocódigo se puede ver en \ref{ERDG-SHADE}
+
+\begin{algorithm}
+\caption{ERDG-SHADE}
+\label{ERDG-SHADE}
+\begin{algorithmic}[1]
+\STATE grupos = ERDG($f$, $dim$, $l$, $u$)
+\FORALL {grupo \textbf{en} grupos}
+    \STATE factor = $\frac{\text{dim(grupo)}}{\text{dim}}$
+    \STATE Ejecutar SHADE con $factor \times \text{total\_evals}$
+\ENDFOR
+\end{algorithmic}
+\end{algorithm}
+
+ 
+
 \section{ERDG-SHADE-ILS}
+
+El objetivo principal de este trabajo se resumen en comprobar si la descomposición previa en subgrupos es efectiva al aplicar a SHADE-ILS. Para ello, se ha creado el algoritmo ERDG-SHADE-ILS. En este caso se obtienen previamente los grupos usando ERDG y luego se aplica SHADE-ILS En cada iteración del algoritm, se aplica SHADE y la búsqueda local a cada grupo, en vez de a todas las variables a la vez. Cada grupo se ejecuta con un número de evaluaciones proporcional a su tamaño al igual que antes. El pseucódigo viene representado en \ref{ERDG-SHADE-ILS}.
+
+\begin{algorithm}
+\caption{ERDG-SHADE-ILS}
+\label{ERDG-SHADE-ILS}
+\begin{algorithmic}[1]
+\STATE \textbf{Algoritmo 1: ERDG-SHADE-ILS}
+\STATE grupos $\leftarrow$ ERDG($f$, $dim$, $l$, $u$)
+\STATE población $\leftarrow$ \text{random}($dim$, tamaño\_población)
+\STATE solución\_inicial $\leftarrow$ ($superior + inferior) / 2$
+\STATE mejor\_solución $\leftarrow$ solución\_inicial
+\WHILE {evaluaciones\_totales < evaluaciones\_máximas}
+    \STATE previo $\leftarrow$ actual\_mejor.fitness
+    \STATE Escoge el método de BL (Búsqueda Local) a aplicar en esta iteración
+    \FORALL {grupo \textbf{en} grupos} 
+        \STATE actual\_mejor $\leftarrow$ SHADE(población, actual\_mejor, grupo)
+        \STATE mejora $\leftarrow$ previo - actual\_mejor.fitness
+        \STATE actual\_mejor $\leftarrow$ BL(población, actual\_mejor, grupo)
+    \ENDFOR
+    \STATE Actualiza probabilidad de aplicar BL
+    \IF {mejor(actual\_mejor, mejor\_solución)}
+        \STATE mejor\_solución $\leftarrow$ actual\_mejor
+    \ENDIF
+    \IF {Debe reiniciar}
+        \STATE Reinicia y actualiza actual\_mejor
+    \ENDIF
+\ENDWHILE
+\end{algorithmic}
+\end{algorithm}
+
 
 \endinput
 %--------------------------------------------------------------------

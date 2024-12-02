@@ -1,9 +1,22 @@
 % !TeX root = ../tfg.tex
 % !TeX encoding = utf8
 
-\chapter{Conclusiones}
+\chapter{Conclusiones y futuras lineas de investigación}
+En este último capítulo, se resumen las conclusiones extraídas del análisis de los datos obtenidos y se proponen posibles líneas de investigación basadas en las conclusiones de por qué al introducir agrupamiento de variables puede no estar funcionando.
 
-\section{Conclusiones extraídas del análisis de los datos}
+Hemos comprobado que aplicar un agrupamiento previo de las variables, es ciertamente efectivo cuando se utiliza en el marco de la coevolución cooperativa, confirmando lo que afirmaban los autores en su publicación original. También hemos reafirmado la necesidad que tenían los autores por encontrar un algoritmo de agrupamiento que fuese mas efectivo que el agrupamiento diferencial, como el ERDG, ya que DG2 consumía demasiadas evaluaciones, lo que lo hacía inviable en problemas de muy alta dimensionalidad o en problemas que requiriesen de una respuesta más rápida.
+
+Sin embargo, cuando tratamos de aplicar el agrupamiento de variables a algoritmos diseñados especialemente para la alta dimensionalidad como SHADE-ILS, los resultados fueron decepcionantes, ya que en la mayoría de los casos, los resultados obtenidos fueron peores. A pesar de ello, obtuvimos información que puede ser de utilidad para crear una propuesta mejor en el futuro.
+
+\begin{itemize}
+	\item Como en la coevolución cooperativa si que se obtienen mejores resultados, sería una buena idea integrar SHADE-ILS en este marco, para comprobar si se obtienen mejores resultados.
+
+	\item Comparando la asignación estática de evaluaciones con la evaluación ponderada, comprobamos que en la mayoría de los casos la ponderada era más eficaz, sin embargo, en ciertos casos la estática era más efectiva, lo que nos incita a probar una asignación de recursos diferente, que no se base únicamente en el tamaño de cada grupo si no en la contribución que tiene cada grupo en la mejora del resultado final, asignando más evaluaciones a aquellos que reporten mejores resultados durante el proceso de evolución. Por ejemplo se podría incluir en el marco de CCFR, lo que permitiría usar coevolución cooperativa con una asignación eficiente de recursos, solucionando los dos posibles problemas que hemos encontrado a la hora de realizar este trabajo.
+	
+	\item En problemas no separables, ERDG-SHADE si que presenta mejores resultados que SHADE cuando el número de evaluaciones es bajo, por tanto para problemas no separables que requieran de una respuesta rápida, la aplicación de esta técnica si que ha obtenido resultados favorables. También podría probarse introducir SHADE en CCFR para este tipo de problemas.
+\end{itemize}
+
+Por último, a pesar de que los resultados no fuesen favorables, hemos creado una biblioteca de código abierto en el lenguaje de programación Julia, acercando el código sobre agrupamiento de variables, SHADE y SHADE-ILS a esta comunidad, lo que contribuirá a aumentar la riqueza de este lenguaje y permitirá que se puedan realizar futuros experimentos en este campo de forma más accesible, puesto que ahora se dispone de una base sobre la que experimentar y no es necesario partir de los algoritmos originales implementados en MATLAB. Esta biblioteca está disponible en github \cite{biblioteca}
 
 \endinput
 %--------------------------------------------------------------------

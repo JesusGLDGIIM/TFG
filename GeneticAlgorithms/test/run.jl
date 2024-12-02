@@ -248,10 +248,6 @@ function compare_grouping(func_num)
     lb, ub = get_bounds(func_num)
     D = 1000  # Dimensión del problema
 
-    if func_num == 13
-        D = 905
-    end
-
     # Inicializar la función de prueba CEC2013
     cec2013_init(func_num, "../../test/cec2013lsgo")
     cec2013_set_data_dir("../../test/cec2013lsgo/cdatafiles")
